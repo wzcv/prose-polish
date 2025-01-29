@@ -74,7 +74,7 @@ async function addDefaultCards() {
     // 添加第一个卡片
     const card1 = cardManager.addCard(
         '规范表述',
-        '你是一位专业的文字编辑。这是一段文字，但它的表述不是很符合现代汉语规范。请你修改它的表述，使其能够满足现代汉语规范的需求：{{1}}'
+        '你是一位专业的文字编辑。这是一段文字，但它的表述不是很符合现代汉语规范。请你修改它的表述，使其能够满足现代汉语规范的需求：{{text}}'
     );
     console.log('Added card 1:', card1.id);
 
@@ -84,7 +84,7 @@ async function addDefaultCards() {
     // 添加第二个卡片
     const card2 = cardManager.addCard(
         '衔接',
-        '这两段文字中间的衔接太突兀了。请在两段文字之间添加一段，让表达顺畅。\n\n第一段：{{1}}\n\n第二段：{{2}}'
+        '你是一位专业的文字编辑。以下有两段文字，我想把它们衔接在一起，但直接衔接太突兀了。请你编写第三段文字，可以插在两段文字之间，让表达顺畅：\n\n```{{p1}}```\n\n```{{p2}}```'
     );
     console.log('Added card 2:', card2.id);
 
@@ -93,7 +93,7 @@ async function addDefaultCards() {
     // 添加第三个卡片
     const card3 = cardManager.addCard(
         '稿件整体化',
-        '你是一位专业的图书编辑。这是一段文字，但写得太细碎了。请你改写这段文字，使其整体性强一些，要求情感真挚、用词标准：{{1}}'
+        '你是一位专业的文字编辑。这是一段文字，但写得太细碎了。请你改写这段文字，使其整体性强一些，要求情感真挚、用词标准：{{text}}'
     );
     console.log('Added card 3:', card3.id);
 }

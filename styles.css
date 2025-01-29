@@ -19,20 +19,14 @@ body {
     width: 300px;
     background-color: white;
     border-right: 1px solid #d2d2d7;
-    padding: 20px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
 }
 
-.sidebar h2 {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 12px;
-}
-
 .prompt-cards {
-    margin: 0 -20px;
-    padding: 0 20px;
+    margin: 0 -16px;
+    padding: 0 16px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -61,7 +55,6 @@ body {
     margin-top: 16px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
 }
 
 .prompt-card {
@@ -72,6 +65,10 @@ body {
     transition: all 0.2s;
     position: relative;
     padding-bottom: 32px;
+    max-height: 150px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .prompt-card:hover {
@@ -88,6 +85,7 @@ body {
     font-size: 16px;
     margin-bottom: 8px;
     color: #1d1d1f;
+    flex-shrink: 0;
 }
 
 .prompt-card .card-prompt {
@@ -96,6 +94,21 @@ body {
     color: #666;
     margin-top: 8px;
     white-space: pre-wrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+    flex: 1;
+}
+
+.prompt-card .card-prompt::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 20px;
+    background: linear-gradient(transparent, white);
+    pointer-events: none;
 }
 
 .prompt-card p {
@@ -112,6 +125,7 @@ body {
     font-size: 14px;
     cursor: pointer;
     transition: background-color 0.2s;
+    margin-bottom: 12px;
 }
 
 .submit-button:hover:not(:disabled) {
@@ -126,15 +140,10 @@ body {
 .output-container {
     border: 1px solid #d2d2d7;
     border-radius: 8px;
-    padding: 16px;
-    height: 200px;
+    padding: 12px;
+    height: 192px;
     display: flex;
     flex-direction: column;
-}
-
-.output-container h3 {
-    font-size: 14px;
-    margin-bottom: 8px;
 }
 
 .output-content {
@@ -161,19 +170,21 @@ body {
     display: flex;
     flex-direction: column;
     background-color: white;
-    padding: 20px;
+    padding: 16px;
 }
 
 header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
+    padding: 0 4px;
 }
 
 header h1 {
     font-size: 24px;
     font-weight: 600;
+    color: #1d1d1f;
 }
 
 #model-selector {
@@ -185,7 +196,7 @@ header h1 {
 }
 
 .messages {
-    height: 60vh;
+    height: calc(60vh + 8px);
     overflow-y: auto;
     padding: 20px;
 }
@@ -210,7 +221,7 @@ header h1 {
 }
 
 .message.user .avatar {
-    background-color: #34c759;
+    background-color: #007aff;
 }
 
 .content {
@@ -280,22 +291,36 @@ header h1 {
 }
 
 .card-actions button {
-    padding: 4px 8px;
+    width: 18px;
+    height: 18px;
     font-size: 12px;
     border: none;
-    border-radius: 4px;
+    border-radius: 50%;
     cursor: pointer;
     background-color: #f5f5f7;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6;
+    transition: all 0.2s;
+    padding: 0;
+}
+
+.card-actions button:hover {
+    opacity: 1;
 }
 
 .edit-btn:hover {
     background-color: #007aff;
     color: white;
+    opacity: 1;
 }
 
 .delete-btn:hover {
     background-color: #ff3b30;
     color: white;
+    opacity: 1;
 }
 
 .add-card-button {
@@ -308,6 +333,7 @@ header h1 {
     color: #007aff;
     font-size: 14px;
     transition: all 0.2s;
+    margin-bottom: 12px;
 }
 
 .add-card-button:hover {
@@ -523,29 +549,31 @@ header h1 {
 /* 端口容器样式 */
 .port-container {
     position: absolute;
-    bottom: 8px;
-    right: 8px;
+    bottom: 4px;
+    right: 12px;
     display: flex;
     gap: 16px;
-    padding: 4px;
+    padding: 8px;
     align-items: flex-end;
 }
 
 /* 端口样式 */
 .connection-port {
-    width: 10px;
-    height: 10px;
-    background-color: #007aff;
+    width: 16px;
+    height: 16px;
+    background-color: #FFD60A;
     border-radius: 50%;
     cursor: crosshair;
     transition: all 0.2s;
     position: relative;
     margin-top: 20px;
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px rgba(255, 214, 10, 0.3);
 }
 
 .connection-port:hover {
-    transform: scale(1.2);
-    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+    transform: scale(1.3);
+    box-shadow: 0 0 0 2px rgba(255, 214, 10, 0.5);
 }
 
 /* 连接线容器 */
@@ -561,7 +589,7 @@ header h1 {
 
 /* SVG连接线 */
 .connection-line {
-    stroke: #ff9500;
+    stroke: #00b894;
     stroke-width: 2;
     fill: none;
     pointer-events: none;
@@ -585,7 +613,7 @@ header h1 {
     left: 8px;
     width: 12px;
     height: 12px;
-    background-color: #34c759;  /* 使用不同的颜色区分 */
+    background-color: #007aff;
     border-radius: 50%;
     cursor: crosshair;
     transition: all 0.2s;
@@ -594,13 +622,13 @@ header h1 {
 
 .text-card-port:hover {
     transform: scale(1.2);
-    box-shadow: 0 0 0 2px rgba(52, 199, 89, 0.2);
+    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
 }
 
 /* 连接状态的端口样式 */
 .text-card-port.connected,
 .connection-port.connected {
-    background-color: #ff9500;
+    background-color: #00b894;
 }
 
 /* 正在连接状态的端口样式 */
@@ -612,15 +640,15 @@ header h1 {
 @keyframes pulse {
     0% {
         transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(255, 149, 0, 0.4);
+        box-shadow: 0 0 0 0 rgba(0, 184, 148, 0.4);
     }
     70% {
         transform: scale(1.2);
-        box-shadow: 0 0 0 6px rgba(255, 149, 0, 0);
+        box-shadow: 0 0 0 6px rgba(0, 184, 148, 0);
     }
     100% {
         transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(255, 149, 0, 0);
+        box-shadow: 0 0 0 0 rgba(0, 184, 148, 0);
     }
 }
 
@@ -670,4 +698,12 @@ header h1 {
 
 .connection-port:hover .port-label {
     opacity: 1;
+}
+
+.sidebar h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1d1d1f;
+    padding: 0 4px;
 }
