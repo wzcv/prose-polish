@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI助手</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="script.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 左侧预制提示词栏 -->
+        <aside class="sidebar">
+            <h2>预制提示词</h2>
+            
+            <!-- 提示词卡片区域 -->
+            <div class="prompt-cards">
+                <!-- 卡片将由 JS 动态添加 -->
+            </div>
+            <div class="sidebar-bottom">
+                <button id="add-card" class="add-card-button">+ 添加提示词</button>
+
+                <!-- 提交按钮 -->
+                <button id="submit-prompt" class="submit-button" disabled>提交选中的提示词</button>
+
+                <!-- 输出框 -->
+                <div class="output-container">
+                    <h3>AI 响应</h3>
+                    <div id="prompt-output" class="output-content" draggable="true">
+                        等待提交提示词...
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 右侧主聊天区域 -->
+        <main class="chat-container">
+            <header>
+                <h1>文档编辑</h1>
+                <div class="header-buttons">
+                    <button id="import-button">导入 Markdown</button>
+                    <button id="export-button">导出 Markdown</button>
+                </div>
+            </header>
+            
+            <div id="paragraph-cards" class="paragraph-container">
+                <!-- 段落卡片将在这里动态生成 -->
+            </div>
+            <button id="add-paragraph" class="add-paragraph-button">+</button>
+        </main>
+    </div>
+    <!-- 添加SVG连接线容器 -->
+    <svg class="connections-container">
+        <!-- 连接线将在这里动态生成 -->
+    </svg>
+</body>
+</html> 
