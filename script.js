@@ -2,6 +2,7 @@ import { PromptCardManager } from './js/promptCard.js';
 import { MarkdownHandler } from './js/markdownHandler.js';
 import { ConnectionManager } from './js/connectionManager.js';
 import { CONFIG } from './config.js';
+import { initializeCardManagement } from './js/promptCard.js';
 
 // 更新配置
 const API_CONFIG = {
@@ -253,4 +254,11 @@ async function callAIAPI(message, model) {
     }
     
     return mockApiCall(message, model);
-} 
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 初始化卡片管理功能
+    initializeCardManagement();
+    
+    // ... existing initialization code ...
+}); 

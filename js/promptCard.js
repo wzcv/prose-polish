@@ -309,4 +309,105 @@ export class PromptCardManager {
     getSelectedPrompt() {
         return this.selectedCard?.prompt || null;
     }
+}
+
+// 导出卡片为JSON
+export function exportCards() {
+    const cards = document.querySelectorAll('.prompt-card');
+    const cardsData = Array.from(cards).map(card => ({
+        title: card.querySelector('h3').textContent,
+        prompt: card.querySelector('.card-prompt').textContent
+    }));
+
+    const blob = new Blob([JSON.stringify(cardsData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'prompt-cards.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// 导入卡片
+export function importCards() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        try {
+            const text = await file.text();
+            const cardsData = JSON.parse(text);
+            
+            if (!Array.isArray(cardsData)) {
+                throw new Error('无效的卡片数据格式');
+            }
+            
+            // 获取cardManager实例
+            const cardManager = window.cardManager;
+            
+            // 添加新卡片（追加到现有卡片后面）
+            cardsData.forEach(cardData => {
+                if (cardData.title && cardData.prompt) {
+                    cardManager.addCard(cardData.title, cardData.prompt);
+                }
+            });
+
+            // 显示成功提示
+            const count = cardsData.length;
+            alert(`成功导入 ${count} 个卡片`);
+        } catch (error) {
+            alert('导入失败：' + error.message);
+        }
+    };
+    
+    input.click();
+}
+
+// 初始化导入导出按钮
+export function initializeCardManagement() {
+    const exportButton = document.getElementById('export-cards');
+    const importButton = document.getElementById('import-cards');
+    const clearButton = document.getElementById('clear-cards');
+    const clearConnectionsButton = document.getElementById('clear-connections');
+    
+    exportButton.addEventListener('click', exportCards);
+    importButton.addEventListener('click', importCards);
+    
+    // 添加清空功能
+    clearButton.addEventListener('click', () => {
+        if (confirm('确定要删除所有提示词卡片吗？此操作不可撤销。')) {
+            const cardsContainer = document.querySelector('.prompt-cards');
+            cardsContainer.innerHTML = '';
+            window.cardManager.cards.clear();
+        }
+    });
+
+    // 添加清除连线功能
+    clearConnectionsButton.addEventListener('click', () => {
+        // 清除所有SVG连线
+        const connectionsContainer = document.querySelector('.connections-container');
+        connectionsContainer.innerHTML = '';
+        
+        // 清除所有端口的连接状态
+        document.querySelectorAll('.connection-port, .text-card-port').forEach(port => {
+            port.classList.remove('connected');
+            port.classList.remove('connecting');
+        });
+        
+        // 重置所有卡片的连接状态
+        window.cardManager.cards.forEach(card => {
+            card.connections = new Array(card.placeholders.length).fill(null);
+        });
+
+        // 通知连接管理器重置状态
+        if (window.connectionManager) {
+            window.connectionManager.clearAllConnections();
+        }
+    });
 } 

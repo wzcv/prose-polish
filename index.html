@@ -11,20 +11,45 @@
     <div class="app-container">
         <!-- 左侧预制提示词栏 -->
         <aside class="sidebar">
-            <h2>预制提示词</h2>
+            <div class="section-header">
+                <h2>预制提示词</h2>
+                <div class="header-actions">
+                    <button id="clear-connections" class="warning-button" title="清除所有连线">
+                        清除连线
+                    </button>
+                    <button id="clear-cards" class="circle-danger-button" title="删除所有卡片">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
             
             <!-- 提示词卡片区域 -->
             <div class="prompt-cards">
                 <!-- 卡片将由 JS 动态添加 -->
             </div>
             <div class="sidebar-bottom">
-                <button id="add-card" class="add-card-button">+ 添加提示词卡片</button>
+                <div class="card-management">
+                    <div class="card-management-buttons">
+                        <button id="add-card" class="add-card-button">+ 添加提示词卡片</button>
+                        <button id="import-cards" class="icon-button" title="导入卡片">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 16L12 4M12 16L8 12M12 16L16 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M3 20H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                        <button id="export-cards" class="icon-button" title="导出卡片">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 4L12 16M12 4L8 8M12 4L16 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M3 20H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
 
                 <!-- 提交按钮 -->
                 <button id="submit-prompt" class="submit-button" disabled>提交</button>
-
-                <!-- 输出区域标题 -->
-                <h2>AI 响应</h2>
 
                 <!-- 输出框 -->
                 <div class="output-container">
