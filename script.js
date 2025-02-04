@@ -157,6 +157,8 @@ fileInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (file) {
         await markdownHandler.handleFileImport(file);
+        // 重置文件输入框的值，这样可以重复导入相同的文件
+        fileInput.value = '';
     }
 });
 
@@ -202,6 +204,22 @@ document.getElementById('export-button').addEventListener('click', () => {
     
     // 清理URL对象
     URL.revokeObjectURL(downloadLink.href);
+});
+
+// 添加删除所有段落的功能
+document.getElementById('clear-paragraphs').addEventListener('click', () => {
+    if (confirm('确定要删除所有段落卡片吗？此操作不可撤销。')) {
+        // 清空所有段落卡片
+        paragraphContainer.innerHTML = '';
+        
+        // 清除所有相关的连接
+        if (window.connectionManager) {
+            window.connectionManager.clearAllConnections();
+        }
+
+        // 重置导入计数器
+        markdownHandler.importCount = 0;
+    }
 });
 
 // 模拟API调用（后续需要替换为真实的API调用）

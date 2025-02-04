@@ -531,9 +531,7 @@ header h1 {
 }
 
 .add-paragraph-button {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
+    position: static;
     width: 50px;
     height: 50px;
     border-radius: 25px;
@@ -542,8 +540,6 @@ header h1 {
     border: none;
     font-size: 24px;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -551,7 +547,6 @@ header h1 {
 
 .add-paragraph-button:hover {
     background-color: #0066d6;
-    transform: scale(1.1);
 }
 
 .paragraph-card[data-editable="true"] {
@@ -829,4 +824,56 @@ header h1 {
 .circle-danger-button svg {
     width: 14px;
     height: 14px;
+}
+
+.floating-buttons {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.floating-button {
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s;
+}
+
+.floating-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.floating-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+.floating-button.circle-danger-button {
+    background-color: white;
+    color: #ff3b30;
+    border: 1px solid #ff3b30;
+}
+
+.floating-button.circle-danger-button:hover {
+    background-color: #ff3b30;
+    color: white;
+}
+
+.floating-button.add-paragraph-button {
+    background-color: #007aff;
+    color: white;
+    border: none;
+}
+
+.floating-button.add-paragraph-button:hover {
+    background-color: #0066d6;
 }

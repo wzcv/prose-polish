@@ -3,6 +3,7 @@ export class MarkdownHandler {
         this.container = containerElement;
         this.cards = [];
         this.currentZIndex = 1;  // 跟踪最高的 z-index
+        this.importCount = 0;    // 添加导入计数器
         this.setupDragAndDrop();
     }
 
@@ -35,12 +36,28 @@ export class MarkdownHandler {
 
     // 创建段落卡片
     createCards(paragraphs) {
-        this.container.innerHTML = '';
-        this.cards = [];
-        this.currentZIndex = 1;
+        // 检查是否已有卡片
+        const existingCards = this.container.querySelectorAll('.paragraph-card');
+        const isFirstImport = existingCards.length === 0;
+        
+        // 计算起始位置
+        let startX = 10;  // 默认起始x坐标
+        let startY = 10;  // 默认起始y坐标
+        
+        // 如果不是第一次导入，向右偏移
+        if (!isFirstImport) {
+            this.importCount++;  // 增加导入计数
+            startX = Math.min(
+                10 + (this.importCount * 100),  // 每次偏移100px
+                this.container.clientWidth - 320   // 不超过容器右边界
+            );
+        }
 
+        // 创建新卡片
         paragraphs.forEach((text, index) => {
-            this.createCard(text, index);
+            const card = this.createCard(text);
+            card.style.left = `${startX}px`;
+            card.style.top = `${startY + index * 160}px`;  // 160是卡片间的垂直间距
         });
     }
 
@@ -105,9 +122,8 @@ export class MarkdownHandler {
         card.appendChild(content);
         
         card.style.position = 'absolute';
-        card.style.left = `${10}px`;
-        card.style.top = `${10 + index * 160}px`;
-        card.style.zIndex = index + 1;
+        // 位置将由 createCards 方法设置
+        card.style.zIndex = this.currentZIndex++;
         
         this.cards.push(card);
         this.container.appendChild(card);
