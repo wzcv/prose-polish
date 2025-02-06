@@ -72,7 +72,7 @@ export class PromptCard {
 
         // 更新显示内容
         this.element.querySelector('h3').textContent = this.title;
-        this.element.querySelector('.card-prompt').textContent = this.prompt;
+        this.element.querySelector('.card-prompt').innerHTML = this.prompt;
     }
 
     createCardElement() {
@@ -80,13 +80,22 @@ export class PromptCard {
         card.className = 'prompt-card';
         card.id = this.id;
         
-        // 创建卡片内容
+        // 创建卡片内容，使用HTML转义来防止XSS攻击
+        const escapeHtml = (unsafe) => {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        };
+        
         card.innerHTML = `
             <div class="card-actions">
                 <button class="edit-btn">✎</button>
                 <button class="delete-btn">✕</button>
             </div>
-            <h3>${this.title}</h3>
+            <h3>${escapeHtml(this.title)}</h3>
             <div class="card-prompt">${this.prompt}</div>
             <div class="port-container"></div>
         `;
@@ -399,7 +408,7 @@ export function exportCards() {
     const cards = document.querySelectorAll('.prompt-card');
     const cardsData = Array.from(cards).map(card => ({
         title: card.querySelector('h3').textContent,
-        prompt: card.querySelector('.card-prompt').textContent
+        prompt: card.querySelector('.card-prompt').innerHTML
     }));
 
     const blob = new Blob([JSON.stringify(cardsData, null, 2)], { type: 'application/json' });
