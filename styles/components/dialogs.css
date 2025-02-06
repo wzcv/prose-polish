@@ -1,0 +1,80 @@
+/* 编辑对话框 */
+.edit-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.dialog-content {
+    background-color: var(--color-bg-primary);
+    padding: var(--spacing-xxl);
+    border-radius: var(--radius-xl);
+    width: 90%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.dialog-content input,
+.dialog-content textarea {
+    padding: var(--spacing-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    width: 100%;
+}
+
+.dialog-content input:focus,
+.dialog-content textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+}
+
+.dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+}
+
+.dialog-buttons button {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+#save-edit {
+    background-color: var(--color-primary);
+    color: var(--color-bg-primary);
+}
+
+#save-edit:hover {
+    background-color: var(--color-primary-dark);
+}
+
+#cancel-edit {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+}
+
+#cancel-edit:hover {
+    background-color: var(--color-border);
+}
+
+/* 文件输入包装器 */
+.file-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+} 
