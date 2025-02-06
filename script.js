@@ -76,9 +76,9 @@ async function addDefaultCards() {
     // 添加第一个卡片
     const card1 = cardManager.addCard(
         '规范表述',
-        '你是一位专业的文字编辑。这是一段文字，但它的表述不是很符合现代汉语规范。请你修改它的表述，使其能够满足现代汉语规范的需求：{{text}}'
+        '你是一位专业的文字编辑。这是一段文字，但它的表述不是很符合现代汉语规范。请你修改它的表述，使其能够满足现代汉语规范的需求：```{{text}}```'
     );
-    console.log('Added card 1:', card1.id);
+    // console.log('Added card 1:', card1.id);
 
     // 等待一毫秒以确保时间戳不同
     await new Promise(resolve => setTimeout(resolve, 1));
@@ -88,21 +88,21 @@ async function addDefaultCards() {
         '衔接',
         '你是一位专业的文字编辑。以下有两段文字，我想把它们衔接在一起，但直接衔接太突兀了。请你编写第三段文字，可以插在两段文字之间，让表达顺畅：\n\n```{{p1}}```\n\n```{{p2}}```'
     );
-    console.log('Added card 2:', card2.id);
+    // console.log('Added card 2:', card2.id);
 
     await new Promise(resolve => setTimeout(resolve, 1));
 
     // 添加第三个卡片
     const card3 = cardManager.addCard(
         '稿件整体化',
-        '你是一位专业的文字编辑。这是一段文字，但写得太细碎了。请你改写这段文字，使其整体性强一些，要求情感真挚、用词标准：{{text}}'
+        '你是一位专业的文字编辑。这是一段文字，但写得太细碎了。请你改写这段文字，使其整体性强一些，要求情感真挚、用词标准：```{{text}}```'
     );
-    console.log('Added card 3:', card3.id);
+    // console.log('Added card 3:', card3.id);
 }
 
 // 添加默认文本卡片
 function addDefaultTextCard() {
-    const defaultText = `欢迎使用AI写作助手！这是一个示例文本卡片。试试导入《端午的鸭蛋》，或者点击右下角的 + 添加新卡片开始写作吧！`;
+    const defaultText = `欢迎使用AI写作助手！想要流畅地使用，你只需要记住一个规则：插头插在插座上。这是一个示例文本卡片。试试导入《端午的鸭蛋》，或者点击右下角的 + 添加新卡片开始写作吧！`;
 
     const card = markdownHandler.createCard(defaultText);
     card.style.left = '10px';

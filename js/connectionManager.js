@@ -79,21 +79,31 @@ export class ConnectionManager {
     isPortConnected(port) {
         // 对于文本卡片的蓝色插座，允许同时连接提示词卡片和其他文本卡片
         if (port.classList.contains('text-card-port')) {
-            const connectionId = this.portConnections.get(port.dataset.cardId);
+            // 获取当前端口的连接ID
+            const portId = port.dataset.cardId;
+            const chainConnectionId = this.portConnections.get(`${portId}_chain`);
+            const promptConnectionId = this.portConnections.get(`${portId}_prompt`);
+            
             // 如果当前尝试建立的是链式连接（来自紫色插头）
             if (this.startPort?.classList.contains('text-card-chain-port')) {
-                // 检查是否已经有来自其他文本卡片的链式连接
-                return connectionId && this.connections.get(connectionId)?.startPort?.classList.contains('text-card-chain-port');
+                // 只检查是否已经有来自其他文本卡片的链式连接
+                return chainConnectionId !== undefined;
             }
             // 如果当前尝试建立的是提示词连接
             if (this.startPort?.classList.contains('connection-port')) {
-                // 检查是否已经有来自提示词卡片的连接
-                return connectionId && this.connections.get(connectionId)?.startPort?.classList.contains('connection-port');
+                // 只检查是否已经有来自提示词卡片的连接
+                return promptConnectionId !== undefined;
             }
+            return false;
         }
         
-        // 对于其他类型的端口（紫色插头和黄色插头），保持单一连接
-        return this.portConnections.has(port.dataset.portId || port.dataset.cardId);
+        // 对于紫色插头，只检查它自己的连接状态
+        if (port.classList.contains('text-card-chain-port')) {
+            return this.portConnections.has(port.dataset.cardId);
+        }
+        
+        // 对于提示词卡片的黄色插头，保持单一连接
+        return this.portConnections.has(port.dataset.portId);
     }
 
     // 添加端口连接
@@ -261,6 +271,17 @@ export class ConnectionManager {
             this.handlePromptConnection(this.startPort, endPort);
         }
 
+        // 立即更新连接线位置，确保端点在端口中心
+        const startRect = this.startPort.getBoundingClientRect();
+        const endRect = endPort.getBoundingClientRect();
+        const startX = startRect.left + startRect.width / 2;
+        const startY = startRect.top + startRect.height / 2;
+        const endX = endRect.left + endRect.width / 2;
+        const endY = endRect.top + endRect.height / 2;
+        
+        const path = this.createCurvePath(startX, startY, endX, endY);
+        this.currentConnection.setAttribute('d', path);
+
         // 重置当前连接状态
         this.currentConnection = null;
         this.startPort = null;
@@ -352,14 +373,23 @@ export class ConnectionManager {
         
         if (isChainConnection) {
             // 文本卡片之间的链接：使用竖直控制点
-            const controlY1 = startY + dy * 0.5;
-            const controlY2 = endY - dy * 0.5;
-            return `M ${startX} ${startY} C ${startX} ${controlY1}, ${endX} ${controlY2}, ${endX} ${endY}`;
+            // 确保终点的控制点永远在终点上方
+            const distance = Math.abs(dy); // 计算垂直距离
+            const controlY1 = startY + dy * 0.5; // 起点控制点
+            const controlY2 = endY - 60; // 终点控制点固定在终点上方50px处
+            
+            // 如果起点在终点下方，增加控制点的垂直距离以获得更平滑的曲线
+            if (startY > endY) {
+                return `M ${startX} ${startY} C ${startX} ${startY - distance * 0.5}, ${endX} ${controlY2}, ${endX} ${endY}`;
+            } else {
+                return `M ${startX} ${startY} C ${startX} ${controlY1}, ${endX} ${controlY2}, ${endX} ${endY}`;
+            }
         } else {
-            // 提示词卡片到文本卡片的链接：保持原有的水平控制点
-            const controlX1 = startX + dx * 0.5;
+            // 提示词卡片到文本卡片的链接：使用水平控制点
+            // 调整控制点权重，使终点处的弯曲更明显
+            const controlX1 = startX + dx * 0.3; // 起点控制点权重减小到0.3
             const controlY1 = startY;
-            const controlX2 = endX - dx * 0.5;
+            const controlX2 = endX - dx * 0.7;   // 终点控制点权重增加到0.7
             const controlY2 = endY;
             return `M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`;
         }
