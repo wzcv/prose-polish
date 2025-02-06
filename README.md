@@ -1,6 +1,8 @@
 # AI写作助手
 
 > 本文档由 AI 助手（Claude）基于项目开发记录生成和整理，主要面向初次使用本项目的用户和开发者。
+> 
+> [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 🚀 快速开始
 
@@ -292,3 +294,7 @@ styles/
 2. base.css 必须最先引入，它包含了基础变量定义
 3. 组件样式可以根据需要按需引入
 4. 修改主题色等全局样式只需修改 base.css 中的变量
+
+## 📄 许可证
+
+本项目采用 [MIT 许可证](LICENSE)。你可以自由地使用、修改和分发本项目，但需要保留原始许可证和版权信息。
