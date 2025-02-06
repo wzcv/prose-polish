@@ -95,6 +95,24 @@ export class PromptCard {
         const portContainer = card.querySelector('.port-container');
         this.createPorts(portContainer);
 
+        // 添加删除按钮事件
+        const deleteBtn = card.querySelector('.delete-btn');
+        deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (confirm('确定要删除这个提示词卡片吗？')) {
+                // 删除所有连接端口的连接
+                const ports = card.querySelectorAll('.connection-port');
+                if (window.connectionManager) {
+                    ports.forEach(port => {
+                        window.connectionManager.removePortConnection(port);
+                    });
+                }
+                
+                // 从卡片管理器中移除
+                window.cardManager.deleteCard(this.id);
+            }
+        };
+
         return card;
     }
 
@@ -104,6 +122,11 @@ export class PromptCard {
             const port = document.createElement('div');
             port.className = 'connection-port';
             port.dataset.portId = `${this.id}_port_${index + 1}`;
+            
+            // 添加 SVG 内容
+            port.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path d="M 285.289001 471.220001 L 285.289001 512 L 226.710999 512 L 226.710999 471.220001 L 208.067993 471.220001 C 193.807007 471.220001 182.238998 459.653015 182.238998 445.391998 L 182.238998 369.692993 C 134.914001 348.251007 101.968002 300.639008 101.968002 245.307007 L 101.968002 188.338013 L 101.969002 188.338013 L 101.969002 121.496002 L 158.378006 121.496002 L 158.378006 13.533997 C 158.378006 6.059998 164.431 0 171.904999 0 L 193.526993 0 C 201.001007 0 207.054001 6.059998 207.052994 13.533997 L 207.052994 121.496002 L 304.945007 121.496002 L 304.945007 13.533997 C 304.945007 6.059998 311.005005 0 318.471985 0 L 340.10199 0 C 347.569 0 353.622009 6.059998 353.622009 13.533997 L 353.622009 121.496002 L 410.032013 121.496002 L 410.032013 203.458008 L 410.031006 203.458008 L 410.031006 245.307007 C 410.031006 300.639008 377.09201 348.252014 329.76001 369.692993 L 329.76001 445.391998 C 329.76001 459.653015 318.199005 471.220001 303.931 471.220001 L 285.289001 471.220001 Z"/>
+            </svg>`;
             
             // 添加占位符名称标签
             const label = document.createElement('span');
@@ -148,13 +171,73 @@ export class PromptCard {
         let result = this.prompt;
         this.placeholders.forEach((placeholder, index) => {
             const pattern = new RegExp(`\\{\\{${placeholder}\\}\\}`, 'g');
-            result = result.replace(pattern, this.connections[index].content);
+            
+            // 获取直接连接的文本卡片
+            const startCard = this.getConnectedTextCard(index);
+            if (!startCard) {
+                throw new Error(`无法获取连接的文本卡片：${placeholder}`);
+            }
+
+            // 获取所有链式连接的文本
+            const contents = this.getChainedContents(startCard);
+            const combinedContent = contents.join('\\n');
+            result = result.replace(pattern, combinedContent);
         });
         
         // 添加固定的后缀文本
         result += '\n\n请你直接给出结果，不要做任何解释';
         
+        // 只输出最终的提示词
+        console.log('发送给 API 的提示词:', result);
         return result;
+    }
+
+    // 获取连接到指定端口的文本卡片
+    getConnectedTextCard(portIndex) {
+        const port = this.element.querySelector(`[data-port-id="${this.id}_port_${portIndex + 1}"]`);
+        if (!port) return null;
+
+        const connectionId = window.connectionManager.portConnections.get(port.dataset.portId);
+        if (!connectionId) return null;
+
+        const connection = window.connectionManager.connections.get(connectionId);
+        if (!connection) return null;
+
+        return connection.endPort.closest('.paragraph-card');
+    }
+
+    // 获取所有链式连接的文本内容
+    getChainedContents(startCard) {
+        const contents = [];
+        let currentCard = startCard;
+        const visited = new Set();
+
+        while (currentCard && !visited.has(currentCard.dataset.cardId)) {
+            visited.add(currentCard.dataset.cardId);
+            
+            // 添加当前卡片的文本内容
+            const content = currentCard.querySelector('.card-content').textContent.trim();
+            if (content) {
+                contents.push(content);
+            }
+
+            // 查找下一个链接的卡片
+            const chainPort = currentCard.querySelector('.text-card-chain-port');
+            if (!chainPort) break;
+
+            // 查找从当前卡片的链接端口出发的连接
+            const portId = chainPort.dataset.cardId;
+            const connectionId = window.connectionManager.portConnections.get(portId);
+            if (!connectionId) break;
+
+            const connection = window.connectionManager.connections.get(connectionId);
+            if (!connection) break;
+
+            currentCard = connection.endPort.closest('.paragraph-card');
+            if (visited.has(currentCard?.dataset.cardId)) break;
+        }
+
+        return contents;
     }
 }
 

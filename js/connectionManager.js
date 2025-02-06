@@ -2,6 +2,7 @@ export class ConnectionManager {
     constructor() {
         this.connections = new Map(); // 存储所有连接
         this.portConnections = new Map(); // 存储端口的连接状态
+        this.chainConnections = new Map(); // 存储链式连接的状态
         this.svgContainer = document.querySelector('.connections-container');
         this.currentConnection = null; // 当前正在创建的连接
         this.startPort = null; // 开始连接的端口
@@ -14,7 +15,7 @@ export class ConnectionManager {
     setupEventListeners() {
         // 监听所有端口的鼠标按下事件
         document.addEventListener('mousedown', (e) => {
-            const port = e.target.closest('.connection-port, .text-card-port');
+            const port = e.target.closest('.connection-port, .text-card-port, .text-card-chain-port');
             if (!port) return;
 
             this.startConnection(port, e);
@@ -31,7 +32,7 @@ export class ConnectionManager {
         document.addEventListener('mouseup', (e) => {
             if (!this.currentConnection) return;
 
-            const endPort = e.target.closest('.connection-port, .text-card-port');
+            const endPort = e.target.closest('.connection-port, .text-card-port, .text-card-chain-port');
             if (endPort && this.canConnect(this.startPort, endPort)) {
                 this.completeConnection(endPort);
             } else {
@@ -76,13 +77,40 @@ export class ConnectionManager {
 
     // 检查端口是否已经连接
     isPortConnected(port) {
+        // 对于文本卡片的蓝色插座，允许同时连接提示词卡片和其他文本卡片
+        if (port.classList.contains('text-card-port')) {
+            const connectionId = this.portConnections.get(port.dataset.cardId);
+            // 如果当前尝试建立的是链式连接（来自紫色插头）
+            if (this.startPort?.classList.contains('text-card-chain-port')) {
+                // 检查是否已经有来自其他文本卡片的链式连接
+                return connectionId && this.connections.get(connectionId)?.startPort?.classList.contains('text-card-chain-port');
+            }
+            // 如果当前尝试建立的是提示词连接
+            if (this.startPort?.classList.contains('connection-port')) {
+                // 检查是否已经有来自提示词卡片的连接
+                return connectionId && this.connections.get(connectionId)?.startPort?.classList.contains('connection-port');
+            }
+        }
+        
+        // 对于其他类型的端口（紫色插头和黄色插头），保持单一连接
         return this.portConnections.has(port.dataset.portId || port.dataset.cardId);
     }
 
     // 添加端口连接
     addPortConnection(port1, port2, connectionId) {
-        this.portConnections.set(port1.dataset.portId || port1.dataset.cardId, connectionId);
-        this.portConnections.set(port2.dataset.portId || port2.dataset.cardId, connectionId);
+        const port1Id = port1.dataset.portId || port1.dataset.cardId;
+        const port2Id = port2.dataset.portId || port2.dataset.cardId;
+        
+        // 如果是文本卡片的蓝色插座，使用复合键来存储不同类型的连接
+        if (port2.classList.contains('text-card-port')) {
+            const connectionType = port1.classList.contains('text-card-chain-port') ? 'chain' : 'prompt';
+            this.portConnections.set(`${port2Id}_${connectionType}`, connectionId);
+        } else {
+            this.portConnections.set(port2Id, connectionId);
+        }
+        
+        // 对于发起连接的端口，始终使用单一连接
+        this.portConnections.set(port1Id, connectionId);
     }
 
     // 移除卡片的所有连接
@@ -96,8 +124,27 @@ export class ConnectionManager {
 
     // 移除端口连接
     removePortConnection(port) {
-        const connectionId = this.portConnections.get(port.dataset.portId || port.dataset.cardId);
-        if (connectionId) {
+        const isTextCardPort = port.classList.contains('text-card-port');
+        let connectionIds = [];
+        
+        if (isTextCardPort) {
+            // 对于文本卡片的蓝色插座，获取所有类型的连接
+            const portId = port.dataset.cardId;
+            const chainConnectionId = this.portConnections.get(`${portId}_chain`);
+            const promptConnectionId = this.portConnections.get(`${portId}_prompt`);
+            if (chainConnectionId) connectionIds.push(chainConnectionId);
+            if (promptConnectionId) connectionIds.push(promptConnectionId);
+            
+            // 移除连接类型标识
+            port.classList.remove('prompt-connected', 'chain-connected');
+        } else {
+            // 对于其他端口，获取单一连接
+            const connectionId = this.portConnections.get(port.dataset.portId || port.dataset.cardId);
+            if (connectionId) connectionIds.push(connectionId);
+        }
+
+        // 移除所有相关连接
+        connectionIds.forEach(connectionId => {
             const connection = this.connections.get(connectionId);
             if (connection) {
                 // 移除连接状态类
@@ -107,19 +154,28 @@ export class ConnectionManager {
                 connection.line.remove();
                 // 移除连接记录
                 this.connections.delete(connectionId);
-                // 移除两个端口的连接状态
-                this.portConnections.delete(connection.startPort.dataset.portId || connection.startPort.dataset.cardId);
-                this.portConnections.delete(connection.endPort.dataset.portId || connection.endPort.dataset.cardId);
+
+                // 清理端口连接状态
+                const startPort = connection.startPort;
+                const endPort = connection.endPort;
+                
+                if (startPort.classList.contains('text-card-chain-port')) {
+                    this.portConnections.delete(`${endPort.dataset.cardId}_chain`);
+                } else if (startPort.classList.contains('connection-port')) {
+                    this.portConnections.delete(`${endPort.dataset.cardId}_prompt`);
+                }
+                this.portConnections.delete(startPort.dataset.portId || startPort.dataset.cardId);
 
                 // 更新提示词卡片的连接状态
-                const promptPort = connection.startPort.classList.contains('connection-port') ? connection.startPort : connection.endPort;
-                const promptCard = this.getPromptCard(promptPort);
-                if (promptCard) {
-                    const portIndex = parseInt(promptPort.dataset.portId.split('_port_')[1]) - 1;
-                    promptCard.removeConnection(portIndex);
+                if (startPort.classList.contains('connection-port')) {
+                    const promptCard = this.getPromptCard(startPort);
+                    if (promptCard) {
+                        const portIndex = parseInt(startPort.dataset.portId.split('_port_')[1]) - 1;
+                        promptCard.removeConnection(portIndex);
+                    }
                 }
             }
-        }
+        });
     }
 
     // 开始创建连接
@@ -171,6 +227,15 @@ export class ConnectionManager {
         this.startPort.classList.add('connected');
         endPort.classList.add('connected');
 
+        // 根据连接类型添加额外的类名
+        if (endPort.classList.contains('text-card-port')) {
+            if (this.startPort.classList.contains('connection-port')) {
+                endPort.classList.add('prompt-connected');
+            } else if (this.startPort.classList.contains('text-card-chain-port')) {
+                endPort.classList.add('chain-connected');
+            }
+        }
+
         // 更新连接线样式
         this.currentConnection.classList.remove('temp');
 
@@ -186,16 +251,14 @@ export class ConnectionManager {
         // 记录端口的连接状态
         this.addPortConnection(this.startPort, endPort, connectionId);
 
-        // 更新提示词卡片的连接状态
-        const promptPort = this.startPort.classList.contains('connection-port') ? this.startPort : endPort;
-        const textPort = this.startPort.classList.contains('text-card-port') ? this.startPort : endPort;
-        const promptCard = this.getPromptCard(promptPort);
-        const textCard = this.getTextCard(textPort);
-
-        if (promptCard && textCard) {
-            const portIndex = parseInt(promptPort.dataset.portId.split('_port_')[1]) - 1;
-            const content = textCard.querySelector('.card-content').textContent;
-            promptCard.updateConnection(portIndex, content);
+        // 处理不同类型的连接
+        if (this.startPort.classList.contains('text-card-chain-port') || 
+            endPort.classList.contains('text-card-chain-port')) {
+            // 文本卡片链接
+            this.handleChainConnection(this.startPort, endPort);
+        } else {
+            // 提示词卡片连接
+            this.handlePromptConnection(this.startPort, endPort);
         }
 
         // 重置当前连接状态
@@ -225,7 +288,24 @@ export class ConnectionManager {
         // 如果目标端口已经连接，不允许连接
         if (this.isPortConnected(endPort)) return false;
 
-        // 确保一个是提示词端口，一个是文本卡片端口
+        // 检查是否是文本卡片之间的链接
+        const isChainConnection = startPort.classList.contains('text-card-chain-port') || 
+                                endPort.classList.contains('text-card-chain-port');
+        
+        if (isChainConnection) {
+            // 文本卡片链接的规则：
+            // 1. 一个是紫色插头，一个是蓝色插座
+            const isStartChain = startPort.classList.contains('text-card-chain-port');
+            const isEndSocket = endPort.classList.contains('text-card-port');
+            
+            // 2. 防止形成环
+            if (isStartChain && isEndSocket) {
+                return !this.wouldFormLoop(startPort, endPort);
+            }
+            return false;
+        }
+
+        // 原有的提示词卡片连接规则
         const isStartPrompt = startPort.classList.contains('connection-port');
         const isEndText = endPort.classList.contains('text-card-port');
         const isStartText = startPort.classList.contains('text-card-port');
@@ -234,16 +314,55 @@ export class ConnectionManager {
         return (isStartPrompt && isEndText) || (isStartText && isEndPrompt);
     }
 
+    // 检查是否会形成环
+    wouldFormLoop(startPort, endPort) {
+        const startCard = startPort.closest('.paragraph-card');
+        const endCard = endPort.closest('.paragraph-card');
+        
+        // 检查是否已经存在从终点到起点的路径
+        const visited = new Set();
+        const checkPath = (currentCard) => {
+            if (currentCard === startCard) return true;
+            if (visited.has(currentCard)) return false;
+            
+            visited.add(currentCard);
+            const chainPort = currentCard.querySelector('.text-card-chain-port');
+            if (!chainPort) return false;
+            
+            const connectionId = this.portConnections.get(chainPort.dataset.cardId);
+            if (!connectionId) return false;
+            
+            const connection = this.connections.get(connectionId);
+            if (!connection) return false;
+            
+            const nextCard = connection.endPort.closest('.paragraph-card');
+            return checkPath(nextCard);
+        };
+        
+        return checkPath(endCard);
+    }
+
     // 创建贝塞尔曲线路径
     createCurvePath(startX, startY, endX, endY) {
         const dx = endX - startX;
         const dy = endY - startY;
-        const controlX1 = startX + dx * 0.5;
-        const controlY1 = startY;
-        const controlX2 = endX - dx * 0.5;
-        const controlY2 = endY;
 
-        return `M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`;
+        // 检查是否是文本卡片之间的链接（通过检查起点是否是紫色插头）
+        const isChainConnection = this.startPort?.classList.contains('text-card-chain-port');
+        
+        if (isChainConnection) {
+            // 文本卡片之间的链接：使用竖直控制点
+            const controlY1 = startY + dy * 0.5;
+            const controlY2 = endY - dy * 0.5;
+            return `M ${startX} ${startY} C ${startX} ${controlY1}, ${endX} ${controlY2}, ${endX} ${endY}`;
+        } else {
+            // 提示词卡片到文本卡片的链接：保持原有的水平控制点
+            const controlX1 = startX + dx * 0.5;
+            const controlY1 = startY;
+            const controlX2 = endX - dx * 0.5;
+            const controlY2 = endY;
+            return `M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`;
+        }
     }
 
     // 获取提示词卡片实例
@@ -268,8 +387,66 @@ export class ConnectionManager {
             const endX = endRect.left + endRect.width / 2;
             const endY = endRect.top + endRect.height / 2;
 
+            // 临时保存当前的startPort，以便createCurvePath方法使用
+            const originalStartPort = this.startPort;
+            this.startPort = connection.startPort;
+            
             const path = this.createCurvePath(startX, startY, endX, endY);
             connection.line.setAttribute('d', path);
+            
+            // 恢复原始的startPort
+            this.startPort = originalStartPort;
         });
+    }
+
+    // 处理文本卡片之间的链接
+    handleChainConnection(startPort, endPort) {
+        const startCard = startPort.closest('.paragraph-card');
+        const endCard = endPort.closest('.paragraph-card');
+        
+        // 记录链接关系
+        this.chainConnections.set(startCard.dataset.cardId, endCard.dataset.cardId);
+    }
+
+    // 处理提示词卡片的连接
+    handlePromptConnection(startPort, endPort) {
+        const promptPort = startPort.classList.contains('connection-port') ? startPort : endPort;
+        const textPort = startPort.classList.contains('text-card-port') ? startPort : endPort;
+        const promptCard = this.getPromptCard(promptPort);
+        const textCard = this.getTextCard(textPort);
+
+        if (promptCard && textCard) {
+            const portIndex = parseInt(promptPort.dataset.portId.split('_port_')[1]) - 1;
+            // 获取链接文本，包括所有链接的卡片
+            const content = this.getCombinedContent(textCard);
+            promptCard.updateConnection(portIndex, content);
+        }
+    }
+
+    // 获取组合后的文本内容
+    getCombinedContent(startCard) {
+        const contents = [];
+        let currentCard = startCard;
+        const visited = new Set();
+
+        while (currentCard && !visited.has(currentCard.dataset.cardId)) {
+            visited.add(currentCard.dataset.cardId);
+            contents.push(currentCard.querySelector('.card-content').textContent);
+
+            // 查找下一个链接的卡片
+            const chainPort = currentCard.querySelector('.text-card-chain-port');
+            if (!chainPort) break;
+
+            const connectionId = this.portConnections.get(chainPort.dataset.cardId);
+            if (!connectionId) break;
+
+            const connection = this.connections.get(connectionId);
+            if (!connection) break;
+
+            currentCard = connection.endPort.closest('.paragraph-card');
+            if (visited.has(currentCard?.dataset.cardId)) break;
+        }
+
+        return contents.join('\\n');
     }
 } 

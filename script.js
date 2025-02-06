@@ -22,8 +22,9 @@ const cardManager = new PromptCardManager(cardContainer);
 const markdownHandler = new MarkdownHandler(paragraphContainer);
 const connectionManager = new ConnectionManager();
 
-// 将cardManager暴露到全局，供ConnectionManager使用
+// 将管理器暴露到全局，供其他模块使用
 window.cardManager = cardManager;
+window.connectionManager = connectionManager;
 
 // 监听窗口大小变化和滚动，更新连接线
 window.addEventListener('resize', () => connectionManager.updateConnections());
@@ -99,8 +100,20 @@ async function addDefaultCards() {
     console.log('Added card 3:', card3.id);
 }
 
-// 初始化默认卡片
-addDefaultCards();
+// 添加默认文本卡片
+function addDefaultTextCard() {
+    const defaultText = `欢迎使用AI写作助手！这是一个示例文本卡片。试试导入《端午的鸭蛋》，或者点击右下角的 + 添加新卡片开始写作吧！`;
+
+    const card = markdownHandler.createCard(defaultText);
+    card.style.left = '10px';
+    card.style.top = '10px';
+}
+
+// 在页面加载完成后添加默认卡片
+document.addEventListener('DOMContentLoaded', () => {
+    addDefaultCards();  // 添加默认提示词卡片
+    addDefaultTextCard();  // 添加默认文本卡片
+});
 
 // 监听卡片选择
 cardManager.onCardSelected = (card) => {
@@ -128,7 +141,7 @@ submitButton.addEventListener('click', async () => {
     try {
         // 获取替换了占位符的提示词
         const prompt = selectedCard.getPromptWithConnections();
-        console.log('提交的提示词:', prompt); // 保留这一行日志
+        console.log(prompt);
 
         promptOutput.textContent = 'AI思考中...';
         submitButton.disabled = true;

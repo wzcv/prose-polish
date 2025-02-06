@@ -68,11 +68,24 @@ export class MarkdownHandler {
         card.dataset.editable = 'false';  // 添加编辑状态标记
         card.dataset.cardId = 'text_card_' + Date.now() + '_' + index;
         
-        // 添加连接端口
+        // 添加连接端口（左上角插座）
         const connectionPort = document.createElement('div');
         connectionPort.className = 'text-card-port';
         connectionPort.dataset.cardId = card.dataset.cardId;
+        connectionPort.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path d="M 512 256 C 512 114.615112 397.384888 0 256 0 C 114.615105 0 0 114.615112 0 256 C 0 397.384888 114.615105 512 256 512 C 397.384888 512 512 397.384888 512 256 Z M 40 256 C 40 136.706482 136.706497 40 256 40 C 375.293518 40 472 136.706482 472 256 C 472 375.293518 375.293518 472 256 472 C 136.706497 472 40 375.293518 40 256 Z M 255.27803 429.907074 C 159.728485 429.907074 82 352.171173 82 256.629089 C 82 161.086945 159.732193 83.354767 255.27803 83.354767 C 350.816406 83.354767 428.552307 161.086945 428.552307 256.629089 C 428.552307 352.174866 350.816406 429.907074 255.27803 429.907074 Z M 181.997467 230.213196 C 167.426392 230.213196 155.581589 242.061707 155.581589 256.629089 C 155.581589 271.196442 167.426392 283.044922 181.997467 283.044922 C 196.564819 283.044922 208.41333 271.196442 208.41333 256.629089 C 208.41333 242.061707 196.564819 230.213196 181.997467 230.213196 Z M 330.441895 230.213196 C 315.870789 230.213196 304.022308 242.061707 304.022308 256.629089 C 304.022308 271.196442 315.870789 283.044922 330.441895 283.044922 C 345.005524 283.044922 356.857788 271.196442 356.857788 256.629089 C 356.857788 242.061707 345.005524 230.213196 330.441895 230.213196 Z"/>
+        </svg>`;
         card.appendChild(connectionPort);
+        
+        // 添加新的链接端口（左下角插头）
+        const chainPort = document.createElement('div');
+        chainPort.className = 'text-card-chain-port';
+        chainPort.dataset.cardId = card.dataset.cardId;
+        chainPort.dataset.portType = 'chain';  // 添加端口类型标记
+        chainPort.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path d="M 285.289001 471.220001 L 285.289001 512 L 226.710999 512 L 226.710999 471.220001 L 208.067993 471.220001 C 193.807007 471.220001 182.238998 459.653015 182.238998 445.391998 L 182.238998 369.692993 C 134.914001 348.251007 101.968002 300.639008 101.968002 245.307007 L 101.968002 188.338013 L 101.969002 188.338013 L 101.969002 121.496002 L 158.378006 121.496002 L 158.378006 13.533997 C 158.378006 6.059998 164.431 0 171.904999 0 L 193.526993 0 C 201.001007 0 207.054001 6.059998 207.052994 13.533997 L 207.052994 121.496002 L 304.945007 121.496002 L 304.945007 13.533997 C 304.945007 6.059998 311.005005 0 318.471985 0 L 340.10199 0 C 347.569 0 353.622009 6.059998 353.622009 13.533997 L 353.622009 121.496002 L 410.032013 121.496002 L 410.032013 203.458008 L 410.031006 203.458008 L 410.031006 245.307007 C 410.031006 300.639008 377.09201 348.252014 329.76001 369.692993 L 329.76001 445.391998 C 329.76001 459.653015 318.199005 471.220001 303.931 471.220001 L 285.289001 471.220001 Z"/>
+        </svg>`;
+        card.appendChild(chainPort);
         
         // 添加删除按钮
         const actions = document.createElement('div');
@@ -82,6 +95,29 @@ export class MarkdownHandler {
         deleteBtn.onclick = (e) => {
             e.stopPropagation();
             if (confirm('确定要删除这个卡片吗？')) {
+                // 删除指向该卡片的连接
+                const cardId = card.dataset.cardId;
+                if (window.connectionManager) {
+                    // 删除蓝色插座的连接（包括来自提示词卡片和其他文本卡片的连接）
+                    const textCardPort = card.querySelector('.text-card-port');
+                    if (textCardPort) {
+                        window.connectionManager.removePortConnection(textCardPort);
+                    }
+                    
+                    // 删除紫色插头的连接（该卡片发起的链式连接）
+                    const chainPort = card.querySelector('.text-card-chain-port');
+                    if (chainPort) {
+                        window.connectionManager.removePortConnection(chainPort);
+                    }
+                    
+                    // 删除指向该卡片的所有连接
+                    window.connectionManager.connections.forEach((connection, connectionId) => {
+                        if (connection.endPort.closest('.paragraph-card')?.dataset.cardId === cardId) {
+                            window.connectionManager.removePortConnection(connection.startPort);
+                        }
+                    });
+                }
+                
                 card.remove();
                 this.cards = this.cards.filter(c => c !== card);
             }
@@ -140,6 +176,12 @@ export class MarkdownHandler {
 
         // 鼠标按下时
         const mouseDown = (e) => {
+            // 如果点击的是链接端口或调整大小的区域，不启动卡片拖拽
+            if (e.target.closest('.text-card-chain-port') || 
+                (e.offsetX >= e.target.clientWidth - 20 && e.offsetY >= e.target.clientHeight - 20)) {
+                return;
+            }
+
             const card = e.target.closest('.paragraph-card');
             if (!card || card.dataset.editable === 'true') return;  // 编辑状态下不允许拖拽
 
