@@ -225,7 +225,7 @@ document.getElementById('clear-paragraphs').addEventListener('click', () => {
         // 清空所有段落卡片
         paragraphContainer.innerHTML = '';
         
-        // 清除所有相关的连接
+        // 清除所有连接
         if (window.connectionManager) {
             window.connectionManager.clearAllConnections();
         }

@@ -676,21 +676,7 @@ header h1 {
     transition: all 0.2s;
 }
 
-/* 根据连接类型设置不同的旋转角度 */
-.text-card-port.prompt-connected svg {
-    transform: rotate(-90deg);
-}
-
-.text-card-port.chain-connected svg {
-    transform: rotate(0deg);
-}
-
-.text-card-port:hover svg {
-    transform: scale(1.2);
-    filter: brightness(1.2);
-}
-
-/* 文本卡片组合端口样式 */
+/* 紫色插头基础样式 */
 .text-card-chain-port {
     position: absolute;
     bottom: 8px;
@@ -716,45 +702,28 @@ header h1 {
     filter: brightness(1.2);
 }
 
-/* 连接状态的端口样式 */
-.text-card-port.connected svg path {
-    fill: #00b894;
-    d: path("M 148 23.829071 C 60.587349 64.560425 0 153.204742 0 256 C 0 397.384888 114.615105 512 256 512 C 397.384888 512 512 397.384888 512 256 C 512 152.813232 450.950226 63.885376 363 23.365753 L 363 68.322052 C 428.113617 105.525055 472 175.637421 472 256 C 472 375.293518 375.293518 472 256 472 C 136.706497 472 40 375.293518 40 256 C 40 176.0495 83.437454 106.244354 148 68.896942 L 148 23.829071 Z M 226.710999 12.780029 L 226.710999 -28 L 285.289001 -28 L 285.289001 12.780029 L 303.932007 12.780029 C 318.192993 12.780029 329.761017 24.346985 329.761017 38.608032 L 329.761017 84.307007 C 377.085999 105.748993 410.032013 153.360992 410.032013 208.692993 L 410.032013 265.661987 L 410.031006 265.661987 L 410.031006 332.503998 C 353.622009 332.503998 353.622009 332.503998 353.622009 332.503998 L 353.622009 359.466003 L 304.947021 359.466003 L 304.947021 332.503998 C 207.054993 332.503998 207.054993 332.503998 207.054993 332.503998 L 207.054993 359.466003 L 158.377991 359.466003 L 158.377991 332.503998 L 101.967987 332.503998 L 101.967987 250.541992 L 101.968994 250.541992 L 101.968994 208.692993 C 101.968994 153.360992 134.90799 105.747986 182.23999 84.307007 L 182.23999 38.608032 C 182.23999 24.346985 193.800995 12.780029 208.069 12.780029 Z");
+/* 连接状态样式 */
+.text-card-port.prompt-connected svg {
+    transform: rotate(-90deg);
 }
 
-.connection-port.connected svg path {
-    fill: #00b894;
-    d: path("M 512 256 C 512 397.384888 397.384888 512 256 512 C 114.615112 512 0 397.384888 0 256 C 0 114.615112 114.615112 0 256 0 C 397.384888 0 512 114.615112 512 256 Z");
-}
-
-.text-card-chain-port.connected svg path {
-    fill: #00b894;
-    d: path("M 512 256 C 512 397.384888 397.384888 512 256 512 C 114.615112 512 0 397.384888 0 256 C 0 114.615112 114.615112 0 256 0 C 397.384888 0 512 114.615112 512 256 Z");
-}
-
-.connection-port.connected svg {
-    transform: scale(0.6);
+.text-card-port.chain-connected svg {
+    transform: rotate(0deg);
 }
 
 .text-card-chain-port.connected svg {
-    transform: scale(0.6);
+    transform: rotate(0deg);
 }
 
-/* 正在连接状态的端口样式 */
-.text-card-port.connecting svg {
-    animation: pulse-socket 1.5s infinite;
+.text-card-port.connected svg path,
+.text-card-chain-port.connected svg path,
+.connection-port.connected svg path {
+    fill: #00b894;
 }
 
-.connection-port.connecting svg {
-    animation: pulse 1.5s infinite;
-}
-
-.text-card-chain-port.connecting svg {
-    animation: pulse-chain 1.5s infinite;
-}
-
+/* 连接过程动画 */
 @keyframes pulse-socket {
-    0% {
+    0%, 100% {
         transform: scale(1);
         filter: brightness(1);
     }
@@ -762,29 +731,10 @@ header h1 {
         transform: scale(1.2);
         filter: brightness(1.2);
     }
-    100% {
-        transform: scale(1);
-        filter: brightness(1);
-    }
-}
-
-@keyframes pulse {
-    0% {
-        transform: rotate(90deg) scale(1);
-        filter: brightness(1);
-    }
-    70% {
-        transform: rotate(90deg) scale(1.2);
-        filter: brightness(1.2);
-    }
-    100% {
-        transform: rotate(90deg) scale(1);
-        filter: brightness(1);
-    }
 }
 
 @keyframes pulse-chain {
-    0% {
+    0%, 100% {
         transform: rotate(180deg) scale(1);
         filter: brightness(1);
     }
@@ -792,10 +742,14 @@ header h1 {
         transform: rotate(180deg) scale(1.2);
         filter: brightness(1.2);
     }
-    100% {
-        transform: rotate(180deg) scale(1);
-        filter: brightness(1);
-    }
+}
+
+.text-card-port.connecting svg {
+    animation: pulse-socket 1.5s infinite;
+}
+
+.text-card-chain-port.connecting svg {
+    animation: pulse-chain 1.5s infinite;
 }
 
 /* 防止连线时选中文本 */
@@ -812,16 +766,6 @@ header h1 {
     -moz-user-select: none !important;
     -ms-user-select: none !important;
     cursor: crosshair !important;
-}
-
-/* 确保文本卡片内容在非连线时可以选择 */
-.paragraph-card .card-content {
-    user-select: text;
-}
-
-.paragraph-card[data-editable="true"] .card-content {
-    user-select: text;
-    cursor: text;
 }
 
 /* 端口标签样式 */
