@@ -10,9 +10,9 @@
 这是一个基于大语言模型的写作辅助工具，专注于提升文字编辑和内容创作的效率。它提供了可视化的提示词编辑系统，让你能够轻松地优化和改进文章。
 
 ### 初次使用步骤
-1. **安装 conda**
+1. **安装 Node.js**
    - 这是唯一需要手动安装的环境依赖
-   - 下载地址：[Anaconda官网](https://www.anaconda.com/download)
+   - 下载地址：[Node.js官网](https://nodejs.org/)
    - 安装完成后重启终端
 
 2. **配置 API Key（必需）**
@@ -20,6 +20,8 @@
    - 启动脚本会自动帮你创建并提示配置 `config.js`
 
 3. **启动项目**
+
+   Linux/macOS:
    ```bash
    # 添加脚本执行权限
    chmod +x start.sh
@@ -27,10 +29,24 @@
    # 运行启动脚本
    ./start.sh
    ```
+
+   Windows:
+   ```bash
+   # 使用Git Bash
+   sh start.sh
+
+   # 或使用 PowerShell/CMD
+   bash start.sh
+   ```
+   
+   > 提示：Windows用户如果遇到无法运行脚本的情况，可以：
+   > 1. 使用 Git Bash（推荐，下载地址：[Git for Windows](https://gitforwindows.org/)）
+   > 2. 使用 WSL（Windows Subsystem for Linux）
+   > 3. 直接使用手动启动步骤（见下方"手动启动步骤"部分）
    
    启动脚本会自动：
-   - 创建并配置 Node.js 环境
-   - 安装所需依赖
+   - 检查环境依赖
+   - 安装所需包
    - 启动服务器
 
 4. **选择启动模式并访问**
@@ -167,25 +183,7 @@ styles/
 ## 📖 使用指南
 
 ### 环境要求
-- Node.js: 20.17.0
-- OpenSSL: 3.0.15
-- ICU: 73.1
-- LibUV: 1.48.0
-
-### 环境配置
-1. **配置 Node.js 环境**
-```bash
-# 如果使用 conda
-conda activate gai-chat-nodejs
-
-# 如果需要安装 Node.js
-conda install nodejs
-```
-
-2. **配置 API Key**
-- 复制 `config.example.js` 并重命名为 `config.js`
-- 在 [通义千问开放平台](https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key) 获取 API Key
-- 将 API Key 填入 `config.js`
+- Node.js: 20.17.0 或更高版本
 
 ### 手动启动步骤
 如果你不想使用启动脚本，可以手动执行：

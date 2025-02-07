@@ -9,31 +9,11 @@ NC='\033[0m' # No Color
 # 清屏
 clear
 
-# 检查conda是否安装
-if ! command -v conda &> /dev/null; then
-    echo -e "${RED}错误：未检测到conda安装。${NC}"
-    echo "请先安装conda后再运行此脚本。"
-    exit 1
-fi
-
-# 检查并激活conda环境
-CONDA_ENV="gai-chat-nodejs"
-if ! conda info --envs | grep -q "$CONDA_ENV"; then
-    echo -e "${BLUE}正在创建conda环境 $CONDA_ENV...${NC}"
-    conda create -y -n $CONDA_ENV nodejs
-    if [ $? -ne 0 ]; then
-        echo -e "${RED}创建conda环境失败！${NC}"
-        exit 1
-    fi
-fi
-
-# 激活conda环境
-echo -e "${BLUE}正在激活conda环境 $CONDA_ENV...${NC}"
-eval "$(conda shell.bash hook)"
-conda activate $CONDA_ENV
-
-if [ $? -ne 0 ]; then
-    echo -e "${RED}激活conda环境失败！${NC}"
+# 检查node是否安装
+if ! command -v node &> /dev/null; then
+    echo -e "${RED}错误：未检测到Node.js安装。${NC}"
+    echo "请先安装Node.js后再运行此脚本。"
+    echo "下载地址：https://nodejs.org/"
     exit 1
 fi
 
@@ -80,12 +60,10 @@ case $choice in
         ;;
     3)
         echo -e "\n${BLUE}再见！${NC}"
-        conda deactivate
         exit 0
         ;;
     *)
         echo -e "\n${GREEN}无效的选项，请重新运行脚本。${NC}"
-        conda deactivate
         exit 1
         ;;
 esac 
