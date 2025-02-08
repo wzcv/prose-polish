@@ -9,6 +9,22 @@
 ### 项目简介
 这是一个基于大语言模型的写作辅助工具，专注于提升文字编辑和内容创作的效率。它提供了可视化的提示词编辑系统，让你能够轻松地优化和改进文章。
 
+### 支持的大语言模型
+目前支持以下模型：
+1. **通义千问**（默认）
+   - 阿里云提供的大语言模型
+   - 需要在[通义千问开放平台](https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key)获取 API Key
+
+2. **DeepSeek**
+   - DeepSeek-V3：适合通用对话和写作场景
+   - DeepSeek-R1：专注于推理和分析能力
+   - 需要在[DeepSeek 开放平台](https://platform.deepseek.com)获取 API Key
+
+3. **自定义模型**
+   - 支持配置任何兼容 OpenAI API 格式的模型
+   - 可自定义 Base URL、API Key 和模型名称
+   - 适合接入私有部署的模型或其他云服务商的模型
+
 ### 初次使用步骤
 1. **安装 Node.js**
    - 这是唯一需要手动安装的环境依赖
@@ -16,8 +32,9 @@
    - 安装完成后重启终端
 
 2. **配置 API Key（必需）**
-   - 在 [通义千问开放平台](https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key) 获取 API Key
-   - 启动脚本会自动帮你创建并提示配置 `config.js`
+   - 复制 `config.example.js` 为 `config.js`
+   - 至少需要配置一个模型的 API Key
+   - 推荐使用通义千问（默认模型）
 
 3. **启动项目**
 

@@ -331,8 +331,19 @@ export class PromptCardManager {
 
     // 选择卡片
     selectCard(cardId) {
-        if (!cardId || !this.cards.has(cardId)) return;
-        if (this.selectedCard?.id === cardId) return;
+        if (!cardId) return;
+
+        // 如果点击的是当前已选中的卡片，则取消选中
+        if (this.selectedCard?.id === cardId) {
+            this.selectedCard = null;
+            document.querySelectorAll('.prompt-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            if (this.onCardSelected) {
+                this.onCardSelected(null);
+            }
+            return;
+        }
 
         const allCards = this.container.querySelectorAll('.prompt-card');
         allCards.forEach(card => card.classList.remove('selected'));

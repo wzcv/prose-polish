@@ -9,7 +9,7 @@ export const CONFIG = {
     TONGYI_API_KEY: 'your-tongyi-api-key-here',
 
     // DeepSeek API 密钥
-    // 获取方式：访问 DeepSeek 开放平台
+    // 获取方式：访问 https://platform.deepseek.com
     DEEPSEEK_API_KEY: 'your-deepseek-api-key-here',
 
     // 自定义模型配置

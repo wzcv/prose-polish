@@ -15,10 +15,13 @@ const MODEL_CONFIG = {
     }
 };
 
+// 检测是否为开发模式
+const isDevelopment = window.location.hostname === '127.0.0.1';
+
 // 更新配置
 const API_CONFIG = {
     TONGYI_API_KEY: CONFIG.TONGYI_API_KEY,
-    API_URL: 'http://localhost:3000/api/chat',  // 更新为本地服务器地址
+    API_URL: isDevelopment ? null : 'http://localhost:3000/api/chat',
     DEEPSEEK_API_KEY: CONFIG.DEEPSEEK_API_KEY,
     CUSTOM_MODEL: CONFIG.CUSTOM_MODEL
 };
@@ -164,11 +167,11 @@ submitButton.addEventListener('click', async () => {
             actualModel = MODEL_CONFIG.DEEPSEEK.MODELS.V3;
         } else if (modelInfo.model === 'deepseek-r1') {
             actualModel = MODEL_CONFIG.DEEPSEEK.MODELS.R1;
-        } else if (modelInfo.model === 'custom') {
-            actualModel = modelInfo.config?.model || 'unknown';
+        } else if (modelInfo.model === 'custom' && API_CONFIG.CUSTOM_MODEL) {
+            actualModel = API_CONFIG.CUSTOM_MODEL.MODEL;
         }
         
-        console.log('发送请求到模型:', actualModel);
+        console.log('发送请求到模型:', actualModel || 'unknown');
         console.log('提示词:', prompt);
 
         promptOutput.textContent = 'AI思考中...';
@@ -263,11 +266,11 @@ document.getElementById('clear-paragraphs').addEventListener('click', () => {
     }
 });
 
-// 模拟API调用（后续需要替换为真实的API调用）
+// 模拟API调用
 async function mockApiCall(message, model) {
     // 模拟网络延迟
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return `这是来自 ${model} 的回复：我收到了你的消息："${message}"`;
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return `[前端开发模式] 当前使用的是模拟数据。如需调用真实 API，请改用完整模式。`;
 }
 
 // 显示自定义模型配置对话框
@@ -353,19 +356,17 @@ function initializeModelSelector() {
     const modelDropdown = document.querySelector('.model-dropdown');
     const modelOptions = document.querySelectorAll('.model-option');
     
-    // 根据配置设置初始模型
+    // 设置默认模型为通义千问
     let currentModel = 'tongyi';
-    if (API_CONFIG.CUSTOM_MODEL?.BASE_URL) {
-        currentModel = 'custom';
-        // 设置初始选中状态
-        modelOptions.forEach(opt => {
-            if (opt.dataset.model === 'custom') {
-                opt.classList.add('selected');
-            } else {
-                opt.classList.remove('selected');
-            }
-        });
-    }
+    
+    // 设置初始选中状态
+    modelOptions.forEach(opt => {
+        if (opt.dataset.model === 'tongyi') {
+            opt.classList.add('selected');
+        } else {
+            opt.classList.remove('selected');
+        }
+    });
 
     // 切换下拉菜单
     modelSelector.addEventListener('click', (e) => {
@@ -407,8 +408,14 @@ function initializeModelSelector() {
     });
 }
 
-// 修改 callAIAPI 函数以支持 DeepSeek
+// 修改 callAIAPI 函数
 async function callAIAPI(message, model) {
+    // 在开发模式下使用 mock 数据
+    if (isDevelopment) {
+        console.log('开发模式：使用模拟数据');
+        return mockApiCall(message, model);
+    }
+
     const modelInfo = window.getCurrentModel();
     
     if (modelInfo.model === 'custom') {
@@ -440,10 +447,12 @@ async function callAIAPI(message, model) {
 
             if (!response.ok) {
                 const errorData = await response.json();
+                console.error('自定义模型 API 错误:', errorData);
                 throw new Error(`API调用失败: ${errorData.error?.message || '未知错误'}`);
             }
 
             const data = await response.json();
+            console.log('自定义模型响应数据:', data);
             return data.choices[0].message.content;
         } catch (error) {
             throw error;
@@ -478,10 +487,12 @@ async function callAIAPI(message, model) {
 
             if (!response.ok) {
                 const errorData = await response.json();
+                console.error('通义千问 API 错误:', errorData);
                 throw new Error(`API调用失败: ${errorData.message || '未知错误'}`);
             }
 
             const data = await response.json();
+            console.log('通义千问响应数据:', data);
             return data.output?.choices?.[0]?.message.content;
         } catch (error) {
             throw error;
@@ -519,10 +530,12 @@ async function callAIAPI(message, model) {
 
             if (!response.ok) {
                 const errorData = await response.json();
+                console.error('DeepSeek API 错误:', errorData);
                 throw new Error(`API调用失败: ${errorData.error?.message || '未知错误'}`);
             }
 
             const data = await response.json();
+            console.log('DeepSeek响应数据:', data);
             return data.choices[0].message.content;
         } catch (error) {
             throw error;
@@ -539,4 +552,39 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeModelSelector();
     
     // ... existing initialization code ...
-}); 
+});
+
+// 修改 PromptCardManager 类中的 selectCard 函数
+function selectCard(cardId) {
+    if (!cardId) return;
+
+    // 如果点击的是当前已选中的卡片，则取消选中
+    if (this.selectedCard?.id === cardId) {
+        this.selectedCard = null;
+        document.querySelectorAll('.prompt-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        if (this.onCardSelected) {
+            this.onCardSelected(null);
+        }
+        return;
+    }
+
+    const allCards = this.container.querySelectorAll('.prompt-card');
+    allCards.forEach(card => card.classList.remove('selected'));
+
+    this.selectedCard = null;
+
+    const cardElement = document.getElementById(cardId);
+    if (cardElement) {
+        const card = this.cards.get(cardId);
+        if (card) {
+            cardElement.classList.add('selected');
+            this.selectedCard = card;
+        }
+    }
+    
+    if (this.onCardSelected) {
+        this.onCardSelected(this.selectedCard);
+    }
+} 

@@ -223,7 +223,14 @@
     transition: background-color 0.2s;
 }
 
-.model-selector-button:hover {
+/* 跟随提交按钮的禁用状态 */
+.submit-button:disabled + .model-selector-button {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* 非禁用状态下的悬停效果 */
+.submit-button:not(:disabled) + .model-selector-button:hover {
     background-color: var(--color-primary-dark);
 }
 
