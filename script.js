@@ -4,10 +4,23 @@ import { ConnectionManager } from './js/connectionManager.js';
 import { CONFIG } from './config.js';
 import { initializeCardManagement } from './js/promptCard.js';
 
+// 模型配置
+const MODEL_CONFIG = {
+    DEEPSEEK: {
+        BASE_URL: 'https://api.deepseek.com/v1',
+        MODELS: {
+            V3: 'deepseek-chat',
+            R1: 'deepseek-reasoner'
+        }
+    }
+};
+
 // 更新配置
 const API_CONFIG = {
     TONGYI_API_KEY: CONFIG.TONGYI_API_KEY,
     API_URL: 'http://localhost:3000/api/chat',  // 更新为本地服务器地址
+    DEEPSEEK_API_KEY: CONFIG.DEEPSEEK_API_KEY,
+    CUSTOM_MODEL: CONFIG.CUSTOM_MODEL
 };
 
 // DOM 元素
@@ -141,12 +154,27 @@ submitButton.addEventListener('click', async () => {
     try {
         // 获取替换了占位符的提示词
         const prompt = selectedCard.getPromptWithConnections();
-        console.log(prompt);
+        const modelInfo = window.getCurrentModel();
+        
+        // 获取实际使用的模型名称
+        let actualModel = '';
+        if (modelInfo.model === 'tongyi') {
+            actualModel = 'qwen-turbo';
+        } else if (modelInfo.model === 'deepseek-v3') {
+            actualModel = MODEL_CONFIG.DEEPSEEK.MODELS.V3;
+        } else if (modelInfo.model === 'deepseek-r1') {
+            actualModel = MODEL_CONFIG.DEEPSEEK.MODELS.R1;
+        } else if (modelInfo.model === 'custom') {
+            actualModel = modelInfo.config?.model || 'unknown';
+        }
+        
+        console.log('发送请求到模型:', actualModel);
+        console.log('提示词:', prompt);
 
         promptOutput.textContent = 'AI思考中...';
         submitButton.disabled = true;
 
-        const response = await callAIAPI(prompt, 'tongyi');
+        const response = await callAIAPI(prompt, modelInfo.model);
         promptOutput.textContent = response;
     } catch (error) {
         promptOutput.textContent = `错误：${error.message}`;
@@ -242,9 +270,185 @@ async function mockApiCall(message, model) {
     return `这是来自 ${model} 的回复：我收到了你的消息："${message}"`;
 }
 
-// 修改 callAIAPI 函数
+// 显示自定义模型配置对话框
+function showCustomModelDialog() {
+    const dialog = document.createElement('div');
+    dialog.className = 'custom-model-dialog';
+    dialog.innerHTML = `
+        <div class="custom-model-content">
+            <h3>配置自定义模型</h3>
+            <div class="form-group">
+                <label for="base-url">Base URL</label>
+                <input type="text" id="base-url" placeholder="例如：https://api.openai.com/v1" value="${API_CONFIG.CUSTOM_MODEL?.BASE_URL || ''}">
+                <div class="hint">API 服务器的基础 URL</div>
+            </div>
+            <div class="form-group">
+                <label for="api-key">API Key</label>
+                <input type="password" id="api-key" placeholder="输入你的 API Key" value="${API_CONFIG.CUSTOM_MODEL?.API_KEY || ''}">
+                <div class="hint">用于认证的 API 密钥</div>
+            </div>
+            <div class="form-group">
+                <label for="model-name">模型名称</label>
+                <input type="text" id="model-name" placeholder="例如：gpt-3.5-turbo" value="${API_CONFIG.CUSTOM_MODEL?.MODEL || ''}">
+                <div class="hint">要使用的模型标识符</div>
+            </div>
+            <div class="custom-model-buttons">
+                <button class="cancel-btn">取消</button>
+                <button class="save-btn">保存</button>
+            </div>
+        </div>
+    `;
+
+    // 保存按钮事件
+    dialog.querySelector('.save-btn').addEventListener('click', () => {
+        const baseUrl = dialog.querySelector('#base-url').value.trim();
+        const apiKey = dialog.querySelector('#api-key').value.trim();
+        const model = dialog.querySelector('#model-name').value.trim();
+
+        if (!baseUrl || !apiKey || !model) {
+            alert('请填写所有必要信息');
+            return;
+        }
+
+        // 更新配置
+        API_CONFIG.CUSTOM_MODEL = {
+            BASE_URL: baseUrl,
+            API_KEY: apiKey,
+            MODEL: model
+        };
+
+        // 提示用户保存配置到 config.js
+        const configText = 
+`请将以下配置复制到你的 config.js 文件中的 CUSTOM_MODEL 部分：
+
+CUSTOM_MODEL: {
+    BASE_URL: '${baseUrl}',
+    API_KEY: '${apiKey}',
+    MODEL: '${model}'
+}`;
+        
+        console.log('新的自定义模型配置：');
+        console.log(configText);
+        alert('配置已更新！请记得将新的配置保存到 config.js 文件中。\n\n配置信息已输出到控制台，你可以直接复制使用。');
+
+        dialog.remove();
+    });
+
+    // 取消按钮事件
+    dialog.querySelector('.cancel-btn').addEventListener('click', () => {
+        dialog.remove();
+        if (!API_CONFIG.CUSTOM_MODEL?.BASE_URL) {
+            // 如果没有配置，回到默认模型
+            const defaultOption = document.querySelector('.model-option[data-model="tongyi"]');
+            defaultOption.click();
+        }
+    });
+
+    document.body.appendChild(dialog);
+}
+
+// 修改 initializeModelSelector 函数
+function initializeModelSelector() {
+    const modelSelector = document.getElementById('model-selector');
+    const modelDropdown = document.querySelector('.model-dropdown');
+    const modelOptions = document.querySelectorAll('.model-option');
+    
+    // 根据配置设置初始模型
+    let currentModel = 'tongyi';
+    if (API_CONFIG.CUSTOM_MODEL?.BASE_URL) {
+        currentModel = 'custom';
+        // 设置初始选中状态
+        modelOptions.forEach(opt => {
+            if (opt.dataset.model === 'custom') {
+                opt.classList.add('selected');
+            } else {
+                opt.classList.remove('selected');
+            }
+        });
+    }
+
+    // 切换下拉菜单
+    modelSelector.addEventListener('click', (e) => {
+        e.stopPropagation();
+        modelSelector.classList.toggle('active');
+        modelDropdown.classList.toggle('show');
+    });
+
+    // 选择模型
+    modelOptions.forEach(option => {
+        option.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const model = option.dataset.model;
+            
+            if (model === 'custom') {
+                showCustomModelDialog();
+            }
+            
+            // 更新选中状态
+            modelOptions.forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+            
+            currentModel = model;
+            modelDropdown.classList.remove('show');
+            modelSelector.classList.remove('active');
+        });
+    });
+
+    // 点击其他地方关闭下拉菜单
+    document.addEventListener('click', () => {
+        modelDropdown.classList.remove('show');
+        modelSelector.classList.remove('active');
+    });
+
+    // 获取当前选中的模型和配置
+    window.getCurrentModel = () => ({
+        model: currentModel,
+        config: currentModel === 'custom' ? API_CONFIG.CUSTOM_MODEL : null
+    });
+}
+
+// 修改 callAIAPI 函数以支持 DeepSeek
 async function callAIAPI(message, model) {
-    if (model === 'tongyi') {
+    const modelInfo = window.getCurrentModel();
+    
+    if (modelInfo.model === 'custom') {
+        if (!API_CONFIG.CUSTOM_MODEL?.BASE_URL) {
+            throw new Error('自定义模型未配置');
+        }
+
+        try {
+            const response = await fetch(`${API_CONFIG.CUSTOM_MODEL.BASE_URL}/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${API_CONFIG.CUSTOM_MODEL.API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: API_CONFIG.CUSTOM_MODEL.MODEL,
+                    messages: [
+                        {
+                            role: 'system',
+                            content: '你是一个专业的写作助手。请用简洁友好的方式回答问题。'
+                        },
+                        {
+                            role: 'user',
+                            content: message
+                        }
+                    ]
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`API调用失败: ${errorData.error?.message || '未知错误'}`);
+            }
+
+            const data = await response.json();
+            return data.choices[0].message.content;
+        } catch (error) {
+            throw error;
+        }
+    } else if (modelInfo.model === 'tongyi') {
         try {
             const response = await fetch(API_CONFIG.API_URL, {
                 method: 'POST',
@@ -282,6 +486,47 @@ async function callAIAPI(message, model) {
         } catch (error) {
             throw error;
         }
+    } else if (modelInfo.model === 'deepseek-v3' || modelInfo.model === 'deepseek-r1') {
+        if (!API_CONFIG.DEEPSEEK_API_KEY) {
+            throw new Error('DeepSeek API 密钥未配置');
+        }
+
+        const modelName = modelInfo.model === 'deepseek-v3' ? 
+            MODEL_CONFIG.DEEPSEEK.MODELS.V3 : 
+            MODEL_CONFIG.DEEPSEEK.MODELS.R1;
+
+        try {
+            const response = await fetch(`${MODEL_CONFIG.DEEPSEEK.BASE_URL}/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${API_CONFIG.DEEPSEEK_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: modelName,
+                    messages: [
+                        {
+                            role: 'system',
+                            content: '你是一个专业的写作助手。请用简洁友好的方式回答问题。'
+                        },
+                        {
+                            role: 'user',
+                            content: message
+                        }
+                    ]
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`API调用失败: ${errorData.error?.message || '未知错误'}`);
+            }
+
+            const data = await response.json();
+            return data.choices[0].message.content;
+        } catch (error) {
+            throw error;
+        }
     }
     
     return mockApiCall(message, model);
@@ -290,6 +535,8 @@ async function callAIAPI(message, model) {
 document.addEventListener('DOMContentLoaded', () => {
     // 初始化卡片管理功能
     initializeCardManagement();
+    // 初始化模型选择器
+    initializeModelSelector();
     
     // ... existing initialization code ...
 }); 

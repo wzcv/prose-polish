@@ -14,23 +14,48 @@ app.use(express.static(path.join(__dirname, '.')));
 
 // 代理 API 请求
 app.post('/api/chat', async (req, res) => {
+    const model = req.body.model || 'qwen-turbo';
+    const apiKey = req.headers.authorization;
+    
+    if (!apiKey) {
+        return res.status(401).json({ error: 'API Key is required' });
+    }
+
     try {
-        const response = await axios.post(
-            'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation',
-            req.body,
-            {
+        let response;
+        if (model === 'qwen-turbo') {
+            response = await fetch('https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation', {
+                method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${req.headers.authorization}`,
+                    'Authorization': apiKey,
                     'Content-Type': 'application/json'
-                }
-            }
-        );
-        res.json(response.data);
+                },
+                body: JSON.stringify(req.body)
+            });
+        } else if (model === 'deepseek-chat' || model === 'deepseek-reasoner') {
+            // DeepSeek API 转发
+            response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(req.body)
+            });
+        } else {
+            return res.status(400).json({ error: 'Unsupported model' });
+        }
+
+        if (!response.ok) {
+            const error = await response.json();
+            return res.status(response.status).json(error);
+        }
+
+        const data = await response.json();
+        res.json(data);
     } catch (error) {
-        console.error('API调用错误:', error.response?.data || error.message);
-        res.status(500).json({
-            error: error.response?.data || '服务器错误'
-        });
+        console.error('API request failed:', error);
+        res.status(500).json({ error: 'Failed to process request' });
     }
 });
 
