@@ -172,7 +172,6 @@ submitButton.addEventListener('click', async () => {
             actualModel = API_CONFIG.CUSTOM_MODEL.MODEL;
         }
         
-        console.log('发送请求到模型:', actualModel || 'unknown');
         console.log('提示词:', prompt);
 
         promptOutput.textContent = 'AI思考中...';
@@ -566,8 +565,8 @@ async function callAIAPI(message, model) {
     
     // 在本地模式下，除了 Ollama 外的其他模型都使用模拟数据
     if (isDevelopment) {
-        console.log('本地模式：使用模拟数据');
-        return `[本地模式] 当前使用的是模拟数据。如需调用在线API，请切换到在线API模式，或使用本地的 Ollama 模型。`;
+        console.log('本地模式');
+        return `[本地模式] 当前仅支持本地的 Ollama 模型。如需调用在线API，请切换到在线API模式。`;
     }
 
     // 其他模型的处理逻辑保持不变

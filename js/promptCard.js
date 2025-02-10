@@ -194,7 +194,6 @@ export class PromptCard {
         });
         
         // 只输出最终的提示词
-        console.log('发送给 API 的提示词:', result);
         return result;
     }
 

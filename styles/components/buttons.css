@@ -226,12 +226,18 @@
 /* 跟随提交按钮的禁用状态 */
 .submit-button:disabled + .model-selector-button {
     background-color: #ccc;
-    cursor: not-allowed;
+    cursor: pointer;
+    opacity: 0.8;
 }
 
 /* 非禁用状态下的悬停效果 */
-.submit-button:not(:disabled) + .model-selector-button:hover {
+.model-selector-button:hover {
     background-color: var(--color-primary-dark);
+}
+
+/* 禁用状态下的悬停效果 */
+.submit-button:disabled + .model-selector-button:hover {
+    background-color: #bbb;
 }
 
 .model-selector-button svg {
