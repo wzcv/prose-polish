@@ -23,7 +23,8 @@ const API_CONFIG = {
     TONGYI_API_KEY: CONFIG.TONGYI_API_KEY,
     API_URL: isDevelopment ? null : 'http://localhost:3000/api/chat',
     DEEPSEEK_API_KEY: CONFIG.DEEPSEEK_API_KEY,
-    CUSTOM_MODEL: CONFIG.CUSTOM_MODEL
+    CUSTOM_MODEL: CONFIG.CUSTOM_MODEL,
+    SYSTEM_MESSAGE: CONFIG.SYSTEM_MESSAGE
 };
 
 // DOM 元素
@@ -92,7 +93,7 @@ async function addDefaultCards() {
     // 添加第一个卡片
     const card1 = cardManager.addCard(
         '规范表述',
-        '你是一位专业的文字编辑。这是一段文字，但它的表述不是很符合现代汉语规范。请你修改它的表述，使其能够满足现代汉语规范的需求：```{{text}}```'
+        '以下是一段文字，请你修改它的表述，使其能够满足现代汉语规范的需求：```{{text}}```'
     );
     // console.log('Added card 1:', card1.id);
 
@@ -102,7 +103,7 @@ async function addDefaultCards() {
     // 添加第二个卡片
     const card2 = cardManager.addCard(
         '衔接',
-        '你是一位专业的文字编辑。以下有两段文字，我想依次把它们衔接在一起，但直接衔接太突兀了。请你编写第三段文字，可以插在两段文字之间，让表达顺畅：\n第一段文字:<p>{{p1}}</p>。\n第二段文字:<p>{{p2}}</p>'
+        '以下有两段文字，我想依次把它们衔接在一起，但直接衔接太突兀了。请你编写第三段文字，可以插在两段文字之间，让表达顺畅：\n第一段文字:<p>{{p1}}</p>。\n第二段文字:<p>{{p2}}</p>'
     );
     // console.log('Added card 2:', card2.id);
 
@@ -111,7 +112,7 @@ async function addDefaultCards() {
     // 添加第三个卡片
     const card3 = cardManager.addCard(
         '稿件整体化',
-        '你是一位专业的文字编辑。这是一段文字，但写得太细碎了。请你改写这段文字，使其整体性强一些。你不必遵循原文字的结构，可以根据它的内容，重新提炼大纲后再重写，要求情感真挚、用词标准：```{{text}}```'
+        '以下写得太细碎了。请你改写这段文字，使其整体性强一些。你不必遵循原文字的结构，可以根据它的内容，重新提炼大纲后再重写，要求情感真挚、用词标准：```{{text}}```'
     );
     // console.log('Added card 3:', card3.id);
 }
@@ -433,10 +434,7 @@ async function callAIAPI(message, model) {
                 body: JSON.stringify({
                     model: API_CONFIG.CUSTOM_MODEL.MODEL,
                     messages: [
-                        {
-                            role: 'system',
-                            content: '你是一个专业的写作助手。请用简洁友好的方式回答问题。'
-                        },
+                        API_CONFIG.SYSTEM_MESSAGE,
                         {
                             role: 'user',
                             content: message
@@ -469,10 +467,7 @@ async function callAIAPI(message, model) {
                     model: 'qwen-turbo',
                     input: {
                         messages: [
-                            {
-                                role: 'system',
-                                content: '你是通义千问助手，一个强大的AI助手。请用简洁友好的方式回答问题。'
-                            },
+                            API_CONFIG.SYSTEM_MESSAGE,
                             {
                                 role: 'user',
                                 content: message
@@ -516,10 +511,7 @@ async function callAIAPI(message, model) {
                 body: JSON.stringify({
                     model: modelName,
                     messages: [
-                        {
-                            role: 'system',
-                            content: '你是一个专业的写作助手。请用简洁友好的方式回答问题。'
-                        },
+                        API_CONFIG.SYSTEM_MESSAGE,
                         {
                             role: 'user',
                             content: message

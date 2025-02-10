@@ -193,9 +193,6 @@ export class PromptCard {
             result = result.replace(pattern, combinedContent);
         });
         
-        // 添加固定的后缀文本
-        result += '\n\n请你直接给出结果，不要做任何解释';
-        
         // 只输出最终的提示词
         console.log('发送给 API 的提示词:', result);
         return result;
