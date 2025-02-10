@@ -173,4 +173,161 @@
 
 .custom-model-buttons .cancel-btn:hover {
     background-color: var(--color-border);
+}
+
+/* Ollama模型配置对话框 */
+.ollama-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.ollama-content {
+    background-color: var(--color-bg-primary);
+    padding: var(--spacing-xxl);
+    border-radius: var(--radius-xl);
+    width: 90%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.ollama-content h3 {
+    margin-bottom: var(--spacing-md);
+    color: var(--color-text-primary);
+    font-size: 18px;
+}
+
+.ollama-content .description {
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background-color: var(--color-bg-secondary);
+    border-radius: var(--radius-md);
+}
+
+.ollama-content .description code {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.ollama-content .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.ollama-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
+}
+
+.ollama-buttons button {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.ollama-buttons .confirm-btn {
+    background-color: var(--color-primary);
+    color: var(--color-bg-primary);
+}
+
+.ollama-buttons .confirm-btn:hover {
+    background-color: var(--color-primary-dark);
+}
+
+.ollama-buttons .cancel-btn {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+}
+
+.ollama-buttons .cancel-btn:hover {
+    background-color: var(--color-border);
+}
+
+.ollama-content .model-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-primary);
+}
+
+.ollama-content .model-list .loading,
+.ollama-content .model-list .error {
+    padding: var(--spacing-md);
+    color: var(--color-text-secondary);
+    text-align: center;
+}
+
+.ollama-content .model-list .error {
+    color: var(--color-danger);
+    line-height: 1.5;
+}
+
+.ollama-content .model-option {
+    padding: var(--spacing-sm) var(--spacing-md);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+}
+
+.ollama-content .model-option:hover {
+    background-color: var(--color-bg-secondary);
+}
+
+.ollama-content .model-option input[type="radio"] {
+    margin: 0;
+    margin-top: 4px;
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.ollama-content .model-option label {
+    cursor: pointer;
+    flex: 1;
+    margin: 0;
+    color: var(--color-text-primary);
+    min-width: 0;
+}
+
+.ollama-content .model-name {
+    font-weight: 500;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ollama-content .model-info {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.ollama-content .confirm-btn:disabled {
+    background-color: var(--color-border);
+    cursor: not-allowed;
 } 

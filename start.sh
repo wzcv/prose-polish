@@ -19,8 +19,8 @@ fi
 
 echo -e "${BLUE}=== AI写作助手启动菜单 ===${NC}\n"
 echo -e "请选择启动模式："
-echo -e "${GREEN}1${NC}. 完整模式 (前端 + 后端API服务)"
-echo -e "${GREEN}2${NC}. 仅前端开发模式"
+echo -e "${GREEN}1${NC}. 完整模式 (支持在线API和本地模型)"
+echo -e "${GREEN}2${NC}. 本地模式 (支持Ollama本地大模型)"
 echo -e "${GREEN}3${NC}. 退出"
 
 read -p "请输入选项 (1-3): " choice
@@ -49,7 +49,7 @@ case $choice in
         npm start
         ;;
     2)
-        echo -e "\n${BLUE}正在启动前端开发模式...${NC}"
+        echo -e "\n${BLUE}正在启动本地模式...${NC}"
         # 检查依赖是否安装
         if [ ! -d "node_modules" ]; then
             echo -e "\n${GREEN}正在安装项目依赖...${NC}"

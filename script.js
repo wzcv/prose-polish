@@ -271,7 +271,7 @@ document.getElementById('clear-paragraphs').addEventListener('click', () => {
 async function mockApiCall(message, model) {
     // 模拟网络延迟
     await new Promise(resolve => setTimeout(resolve, 500));
-    return `[前端开发模式] 当前使用的是模拟数据。如需调用真实 API，请改用完整模式。`;
+    return `[本地模式] 当前使用的是模拟数据。如需调用在线API，请切换到在线API模式，或使用本地的 Ollama 模型。`;
 }
 
 // 显示自定义模型配置对话框
@@ -351,6 +351,114 @@ CUSTOM_MODEL: {
     document.body.appendChild(dialog);
 }
 
+// 显示 Ollama 配置对话框
+async function showOllamaDialog() {
+    const dialog = document.createElement('div');
+    dialog.className = 'ollama-dialog';
+    dialog.innerHTML = `
+        <div class="ollama-content">
+            <h3>配置本地模型</h3>
+            <div class="description">
+                请确保：<br>
+                1. 已经安装 Ollama；<br>
+                2. 已经安装本地模型；<br>
+                3. Ollama 处于启动服务状态。
+            </div>
+            <div class="form-group">
+                <label>选择模型</label>
+                <div class="model-list">
+                    <div class="loading">正在获取可用模型列表...</div>
+                </div>
+            </div>
+            <div class="ollama-buttons">
+                <button class="cancel-btn">取消</button>
+                <button class="confirm-btn" disabled>确定</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(dialog);
+
+    // 获取可用模型列表
+    try {
+        // 首先检查 Ollama 服务是否在运行
+        const healthCheck = await fetch('http://localhost:11434');
+        if (!healthCheck.ok) {
+            throw new Error('无法连接到 Ollama 服务');
+        }
+        
+        // 获取已安装的模型列表
+        const response = await fetch('http://localhost:11434/api/tags');
+        if (!response.ok) {
+            throw new Error('无法获取模型列表');
+        }
+        
+        const data = await response.json();
+        const modelList = dialog.querySelector('.model-list');
+        const confirmBtn = dialog.querySelector('.confirm-btn');
+        
+        // 检查是否有模型
+        if (data.models && data.models.length > 0) {
+            modelList.innerHTML = data.models.map(model => {
+                // 获取模型大小（转换为GB）
+                const sizeInGB = (model.size / 1024 / 1024 / 1024).toFixed(2);
+                // 获取参数大小
+                const paramSize = model.details?.parameter_size || '未知';
+                // 获取量化级别
+                const quantLevel = model.details?.quantization_level || '未知';
+                
+                return `
+                    <div class="model-option" data-name="${model.name}">
+                        <input type="radio" name="ollama-model" id="model-${model.name}" value="${model.name}">
+                        <label for="model-${model.name}">
+                            <div class="model-name">${model.name}</div>
+                            <div class="model-info">
+                                参数量: ${paramSize} | 
+                                量化: ${quantLevel} | 
+                                大小: ${sizeInGB}GB
+                            </div>
+                        </label>
+                    </div>
+                `;
+            }).join('');
+
+            // 启用确定按钮
+            confirmBtn.disabled = false;
+
+            // 添加选择事件
+            modelList.addEventListener('change', (e) => {
+                if (e.target.type === 'radio') {
+                    window.ollamaModel = e.target.value;
+                }
+            });
+        } else {
+            modelList.innerHTML = `
+                <div class="error">未安装任何模型</div>`;
+        }
+    } catch (error) {
+        dialog.querySelector('.model-list').innerHTML = `
+            <div class="error">未连接到 Ollama</div>
+        `;
+    }
+
+    // 取消按钮事件
+    dialog.querySelector('.cancel-btn').addEventListener('click', () => {
+        dialog.remove();
+        // 如果没有配置，回到默认模型
+        const defaultOption = document.querySelector('.model-option[data-model="tongyi"]');
+        defaultOption.click();
+    });
+
+    // 确定按钮事件
+    dialog.querySelector('.confirm-btn').addEventListener('click', () => {
+        if (!window.ollamaModel) {
+            alert('请选择一个模型');
+            return;
+        }
+        dialog.remove();
+    });
+}
+
 // 修改 initializeModelSelector 函数
 function initializeModelSelector() {
     const modelSelector = document.getElementById('model-selector');
@@ -384,6 +492,8 @@ function initializeModelSelector() {
             
             if (model === 'custom') {
                 showCustomModelDialog();
+            } else if (model === 'ollama') {
+                showOllamaDialog();
             }
             
             // 更新选中状态
@@ -405,20 +515,62 @@ function initializeModelSelector() {
     // 获取当前选中的模型和配置
     window.getCurrentModel = () => ({
         model: currentModel,
-        config: currentModel === 'custom' ? API_CONFIG.CUSTOM_MODEL : null
+        config: currentModel === 'custom' ? API_CONFIG.CUSTOM_MODEL : null,
+        ollamaModel: currentModel === 'ollama' ? window.ollamaModel : null
     });
 }
 
 // 修改 callAIAPI 函数
 async function callAIAPI(message, model) {
-    // 在开发模式下使用 mock 数据
-    if (isDevelopment) {
-        console.log('开发模式：使用模拟数据');
-        return mockApiCall(message, model);
-    }
-
     const modelInfo = window.getCurrentModel();
     
+    // Ollama 模式，不受开发模式影响
+    if (modelInfo.model === 'ollama') {
+        if (!window.ollamaModel) {
+            throw new Error('未选择 Ollama 模型');
+        }
+
+        try {
+            const response = await fetch('http://localhost:11434/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: window.ollamaModel,
+                    prompt: message,
+                    stream: false,
+                    options: {
+                        temperature: 0.7,
+                        top_p: 0.9
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Ollama API 错误:', errorData);
+                throw new Error(`Ollama API调用失败: ${errorData.error || '未知错误'}`);
+            }
+
+            const data = await response.json();
+            console.log('Ollama响应数据:', data);
+            return data.response;
+        } catch (error) {
+            if (error.message.includes('Failed to fetch')) {
+                throw new Error('无法连接到 Ollama 服务。请确保：\n1. Ollama 已安装\n2. 已运行 `ollama serve`\n3. 选择的模型已经下载并运行');
+            }
+            throw error;
+        }
+    }
+    
+    // 在本地模式下，除了 Ollama 外的其他模型都使用模拟数据
+    if (isDevelopment) {
+        console.log('本地模式：使用模拟数据');
+        return `[本地模式] 当前使用的是模拟数据。如需调用在线API，请切换到在线API模式，或使用本地的 Ollama 模型。`;
+    }
+
+    // 其他模型的处理逻辑保持不变
     if (modelInfo.model === 'custom') {
         if (!API_CONFIG.CUSTOM_MODEL?.BASE_URL) {
             throw new Error('自定义模型未配置');

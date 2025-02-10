@@ -20,21 +20,25 @@
    - DeepSeek-R1：专注于推理和分析能力
    - 需要在[DeepSeek 开放平台](https://platform.deepseek.com)获取 API Key
 
-3. **自定义模型**
+3. **Ollama 本地模型**
+   - 支持在本地运行开源大语言模型
+   - 无需 API Key，完全离线运行
+   - 支持 Llama2、Mistral、Qwen 等多种模型
+   - 需要安装 [Ollama](https://ollama.ai)
+
+4. **自定义模型**
    - 支持配置任何兼容 OpenAI API 格式的模型
    - 可自定义 Base URL、API Key 和模型名称
    - 适合接入私有部署的模型或其他云服务商的模型
 
 ### 初次使用步骤
-1. **安装 Node.js**
-   - 这是唯一需要手动安装的环境依赖
-   - 下载地址：[Node.js官网](https://nodejs.org/)
-   - 安装完成后重启终端
+1. **安装必要环境**
+   - Node.js：[下载地址](https://nodejs.org/)
+   - Ollama（可选，用于本地模式）：[下载地址](https://ollama.ai)
 
-2. **配置 API Key（必需）**
+2. **配置 API Key（仅在线API模式需要）**
    - 复制 `config.example.js` 为 `config.js`
-   - 至少需要配置一个模型的 API Key
-   - 推荐使用通义千问（默认模型）
+   - 配置至少一个在线模型的 API Key
 
 3. **启动项目**
 
@@ -67,13 +71,28 @@
    - 启动服务器
 
 4. **选择启动模式并访问**
-   - 完整模式（选项1）：包含前端界面和后端API服务
+   - 完整模式（选项1）：支持所有功能
      - 访问地址：http://localhost:3000
-     - 适用于：正常使用场景，需要AI优化功能
+     - 使用 localhost 以支持完整的服务器功能
+     - 适用于：需要使用在线API或本地模型的场景
+     - 需要：如使用在线API，需配置相应的API Key
    
-   - 前端开发模式（选项2）：仅启动前端界面
+   - 本地模式（选项2）：使用Ollama本地模型
      - 访问地址：http://127.0.0.1:3000
-     - 适用于：前端开发调试，AI功能不可用
+     - 使用 IP 地址以确保与 Ollama API 的最佳兼容性
+     - 适用于：
+       - 无需联网使用
+       - 对数据隐私性要求高
+       - 想要使用开源模型
+     - 需要：
+       - 安装 Ollama
+       - 下载所需模型（如：`ollama pull deepseek-r1:8b`）
+       - 运行 Ollama 服务（`ollama serve`）
+
+> 技术说明：虽然 localhost 和 127.0.0.1 都指向本机，但我们在不同模式下使用不同的地址是为了：
+> 1. 确保完整模式下的服务器功能正常运行
+> 2. 保持与 Ollama 本地API（使用 127.0.0.1:11434）的一致性
+> 3. 避免在本地模式下不必要的 DNS 解析
 
 ### 功能预览
 - ✨ 可视化提示词系统
@@ -208,12 +227,35 @@ styles/
 # 安装依赖
 npm install
 
-# 启动服务器
+# 启动完整模式
 npm start
 
-# 访问应用
-open http://localhost:3000
+# 或启动本地模式（使用 Ollama）
+npm run dev
 ```
+
+### 使用 Ollama 本地模型
+1. **安装 Ollama**
+   - Mac：`brew install ollama`
+   - 其他系统：访问 [ollama.ai](https://ollama.ai) 下载
+
+2. **启动 Ollama 服务**
+   ```bash
+   ollama serve
+   ```
+
+3. **下载模型**
+   ```bash
+   # 下载 Llama2
+   ollama pull deepseek-r1:8b
+   
+   # 或下载其他模型
+   ```
+   
+4. **在应用中使用**
+   - 启动应用后，点击模型选择器
+   - 选择"本地模型（借助Ollama）"
+   - 在弹出的对话框中选择要使用的模型
 
 ### 常见问题解决
 1. **依赖安装失败**
@@ -234,12 +276,12 @@ Ctrl + C
 npm start
 ```
 
-### 开发模式
-仅调试前端界面：
+### 本地模式
+使用本地模式：
 ```bash
-npm run dev  # 启动轻量级开发服务器，支持自动刷新
+npm run dev  # 启动本地模式，支持 Ollama 本地模型
 ```
-注意：开发模式下后端 API 不可用
+注意：本地模式下在线 API 不可用
 
 ## 项目文件结构
 
