@@ -538,6 +538,7 @@ async function callAIAPI(message, model) {
                 body: JSON.stringify({
                     model: window.ollamaModel,
                     prompt: message,
+                    system: API_CONFIG.SYSTEM_MESSAGE.content,
                     stream: false,
                     options: {
                         temperature: 0.7,
@@ -618,7 +619,10 @@ async function callAIAPI(message, model) {
                     model: 'qwen-turbo',
                     input: {
                         messages: [
-                            API_CONFIG.SYSTEM_MESSAGE,
+                            {
+                                role: 'system',
+                                content: API_CONFIG.SYSTEM_MESSAGE.content
+                            },
                             {
                                 role: 'user',
                                 content: message
@@ -662,7 +666,10 @@ async function callAIAPI(message, model) {
                 body: JSON.stringify({
                     model: modelName,
                     messages: [
-                        API_CONFIG.SYSTEM_MESSAGE,
+                        {
+                            role: 'system',
+                            content: API_CONFIG.SYSTEM_MESSAGE.content
+                        },
                         {
                             role: 'user',
                             content: message
