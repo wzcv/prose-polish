@@ -338,17 +338,25 @@ export class ConnectionManager {
 
     // 取消连接
     cancelConnection() {
-        // 移除防止选择的类
-        document.body.classList.remove('connecting-mode');
-
-        if (this.startPort) {
-            this.startPort.classList.remove('connecting');
-        }
         if (this.currentConnection) {
             this.currentConnection.remove();
+            this.currentConnection = null;
         }
-        this.currentConnection = null;
-        this.startPort = null;
+        
+        if (this.startPort) {
+            this.startPort.classList.remove('connecting');
+            
+            // 如果是提示词卡片的端口或文本卡片的链式端口，需要恢复原始的插头形状
+            if (this.startPort.classList.contains('connection-port') || 
+                this.startPort.classList.contains('text-card-chain-port')) {
+                const path = this.startPort.querySelector('path');
+                path.setAttribute('d', 'M 285.289001 471.220001 L 285.289001 512 L 226.710999 512 L 226.710999 471.220001 L 208.067993 471.220001 C 193.807007 471.220001 182.238998 459.653015 182.238998 445.391998 L 182.238998 369.692993 C 134.914001 348.251007 101.968002 300.639008 101.968002 245.307007 L 101.968002 188.338013 L 101.969002 188.338013 L 101.969002 121.496002 L 158.378006 121.496002 L 158.378006 13.533997 C 158.378006 6.059998 164.431 0 171.904999 0 L 193.526993 0 C 201.001007 0 207.054001 6.059998 207.052994 13.533997 L 207.052994 121.496002 L 304.945007 121.496002 L 304.945007 13.533997 C 304.945007 6.059998 311.005005 0 318.471985 0 L 340.10199 0 C 347.569 0 353.622009 6.059998 353.622009 13.533997 L 353.622009 121.496002 L 410.032013 121.496002 L 410.032013 203.458008 L 410.031006 203.458008 L 410.031006 245.307007 C 410.031006 300.639008 377.09201 348.252014 329.76001 369.692993 L 329.76001 445.391998 C 329.76001 459.653015 318.199005 471.220001 303.931 471.220001 L 285.289001 471.220001 Z');
+            }
+            
+            this.startPort = null;
+        }
+        
+        document.body.classList.remove('connecting-mode');
     }
 
     // 检查是否可以连接
