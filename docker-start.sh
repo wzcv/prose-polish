@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# 检查是否存在 config.js
-if [ ! -f "config.js" ]; then
-    echo "未检测到配置文件请检查是否正确挂载config.js"
-    exit 1
-fi
-
 # 检查依赖是否安装
 if [ ! -d "node_modules" ]; then
     echo "\n${GREEN}正在安装项目依赖..."
