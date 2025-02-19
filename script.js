@@ -381,13 +381,13 @@ async function showOllamaDialog() {
     // 获取可用模型列表
     try {
         // 首先检查 Ollama 服务是否在运行
-        const healthCheck = await fetch('http://localhost:11434');
+        const healthCheck = await fetch(CONFIG.OLLAMA_BASE_URL);
         if (!healthCheck.ok) {
             throw new Error('无法连接到 Ollama 服务');
         }
         
         // 获取已安装的模型列表
-        const response = await fetch('http://localhost:11434/api/tags');
+        const response = await fetch(`${CONFIG.OLLAMA_BASE_URL}/api/tags`);
         if (!response.ok) {
             throw new Error('无法获取模型列表');
         }
@@ -530,7 +530,7 @@ async function callAIAPI(message, model) {
         }
 
         try {
-            const response = await fetch('http://localhost:11434/api/generate', {
+            const response = await fetch(`${CONFIG.OLLAMA_BASE_URL}/api/generate`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
