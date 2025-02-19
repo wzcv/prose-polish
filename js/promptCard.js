@@ -482,6 +482,18 @@ export function initializeCardManagement() {
     clearButton.addEventListener('click', () => {
         if (confirm('确定要删除所有提示词卡片吗？此操作不可撤销。')) {
             const cardsContainer = document.querySelector('.prompt-cards');
+            
+            // 先删除所有提示词卡片的连接
+            cardsContainer.querySelectorAll('.prompt-card').forEach(card => {
+                const ports = card.querySelectorAll('.connection-port');
+                if (window.connectionManager) {
+                    ports.forEach(port => {
+                        window.connectionManager.removePortConnection(port);
+                    });
+                }
+            });
+            
+            // 然后清空容器和卡片管理器
             cardsContainer.innerHTML = '';
             window.cardManager.cards.clear();
         }
