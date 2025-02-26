@@ -1,159 +1,167 @@
-# AI写作助手
+![logo](img/logo.svg)
 
-> 本文档由 AI 助手（Claude）基于项目开发记录生成和整理，主要面向初次使用本项目的用户和开发者。
-> 
-> [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+## 🔌 功能简介
 
-## 🚀 快速开始
+prose-polish是一个通过拖拽卡片的方式即可于AI交互的工具，专注于文案、稿件的编辑。
 
-### 项目简介
-这是一个基于大语言模型的写作辅助工具，专注于提升文字编辑和内容创作的效率。它提供了可视化的提示词编辑系统，让你能够轻松地优化和改进文章。
+它可以识别Markdown格式的文稿，将其自动打断成段落卡片。
+
+你可以将常用的提示词预制成卡片，并且快速连接需要修改的稿件。
+
+修改后的稿件依然以卡片的形式呈现，只需要把它拖拽出来，就能作为新的段落。
+
+想要流畅地使用，只需要记住唯一一条规则：**插头插在插座上！**
+
+![demo](img/demo.png)
+
+### 一些可能需要知道的细节
+
+- “导出Markdown”按钮的规则是，将现有的段落卡片从上至下拼接为完成的markdown文件，每个卡片一段。
+- 预制提示词中形如`{{带有双花括号}}`的内容会被识别为黄色插头，作为接线端口。
+- 紫色插头图标可以用于连接其他段落卡片。
+- 预制提示词可以以json格式导入和导出。
 
 ### 支持的大语言模型
+
 目前支持以下模型：
-1. **通义千问**（默认）
-   - 阿里云提供的大语言模型
-   - 需要在[通义千问开放平台](https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key)获取 API Key
 
-2. **DeepSeek**
-   - DeepSeek-V3：适合通用对话和写作场景
-   - DeepSeek-R1：专注于推理和分析能力
-   - 需要在[DeepSeek 开放平台](https://platform.deepseek.com)获取 API Key
+- 通义千问（默认）
+- DeepSeek-V3
+- DeepSeel-R1
+- Ollama 本地模型
+- 自定义模型（任何兼容 OpenAI API 格式的模型）
 
-3. **Ollama 本地模型**
-   - 支持在本地运行开源大语言模型
-   - 无需 API Key，完全离线运行
-   - 支持 Llama2、Mistral、Qwen 等多种模型
-   - 需要安装 [Ollama](https://ollama.ai)
+## 🖋 开始使用
 
-4. **自定义模型**
-   - 支持配置任何兼容 OpenAI API 格式的模型
-   - 可自定义 Base URL、API Key 和模型名称
-   - 适合接入私有部署的模型或其他云服务商的模型
+### 安装必要环境
 
-### 初次使用步骤
-1. **安装必要环境**
-   - Node.js：[下载地址](https://nodejs.org/)
-   - Ollama（可选，用于本地模式）：[下载地址](https://ollama.ai)
+- Node.js：[下载地址](https://nodejs.org/)
+- Ollama（可选，用于本地模式）：[下载地址](https://ollama.ai)
 
-2. **配置 API Key（仅在线API模式需要）**
-   - 复制 `config.example.js` 为 `config.js`
-   - 配置至少一个在线模型的 API Key
+### 配置 API Key（仅在线API模式需要）
 
-3. **启动项目**
+- 复制 `config.example.js` ，并将新文件重命名为 `config.js`
+- 根据其中的备注，配置至少一个在线模型的 API Key
 
-   Linux/macOS:
-   ```bash
-   # 添加脚本执行权限
-   chmod +x start.sh
-   
-   # 运行启动脚本
-   ./start.sh
-   ```
+### 启动项目
 
-   Windows:
-   ```bash
-   # 使用Git Bash
-   sh start.sh
+项目中已经准备好了启动脚本，直接执行以下命令即可。
 
-   # 或使用 PowerShell/CMD
-   bash start.sh
-   ```
-   
-   > 提示：Windows用户如果遇到无法运行脚本的情况，可以：
-   > 1. 使用 Git Bash（推荐，下载地址：[Git for Windows](https://gitforwindows.org/)）
-   > 2. 使用 WSL（Windows Subsystem for Linux）
-   > 3. 直接使用手动启动步骤（见下方"手动启动步骤"部分）
-   
-   启动脚本会自动：
-   - 检查环境依赖
-   - 安装所需包
-   - 启动服务器
+#### Linux/macOS
 
-4. **选择启动模式并访问**
-   - 完整模式（选项1）：支持所有功能
-     - 访问地址：http://localhost:3000
-     - 使用 localhost 以支持完整的服务器功能
-     - 适用于：需要使用在线API或本地模型的场景
-     - 需要：如使用在线API，需配置相应的API Key
-   
-   - 本地模式（选项2）：使用Ollama本地模型
-     - 访问地址：http://127.0.0.1:3000
-     - 使用 IP 地址以确保与 Ollama API 的最佳兼容性
-     - 适用于：
-       - 无需联网使用
-       - 对数据隐私性要求高
-       - 想要使用开源模型
-     - 需要：
-       - 安装 Ollama
-       - 下载所需模型（如：`ollama pull deepseek-r1:8b`）
-       - 运行 Ollama 服务（`ollama serve`）
+```bash
+# 添加脚本执行权限
+chmod +x start.sh
 
-> 技术说明：虽然 localhost 和 127.0.0.1 都指向本机，但我们在不同模式下使用不同的地址是为了：
-> 1. 确保完整模式下的服务器功能正常运行
-> 2. 保持与 Ollama 本地API（使用 127.0.0.1:11434）的一致性
-> 3. 避免在本地模式下不必要的 DNS 解析
+# 运行启动脚本
+./start.sh
+```
 
-### 🐳通过Docker部署
+#### Windows
 
-本节介绍如何通过Docker部署该项目。如果你不知道什么是Docker，请跳过本节。使用上文介绍过的方法已经足以部署该项目。
+```bash
+# 使用Git Bash
+sh start.sh
+
+# 或使用 PowerShell/CMD
+bash start.sh
+```
+
+启动脚本会自动：
+- 检查环境依赖
+- 安装所需包
+- 启动服务器
+
+###  选择启动模式并访问
+
+- 完整模式（选项1）：支持所有功能
+  - 访问地址：http://localhost:3000
+  - 使用 localhost 以支持完整的服务器功能
+  - 适用于：需要使用在线API或本地模型的场景
+  - 需要：如使用在线API，需配置相应的API Key
+
+- 本地模式（选项2）：使用Ollama本地模型
+  - 访问地址：http://127.0.0.1:3000
+  - 使用 IP 地址以确保与 Ollama API 的最佳兼容性
+  - 适用于：
+    - 无需联网使用
+    - 对数据隐私性要求高
+    - 想要使用开源模型
+  - 需要：
+    - 安装 Ollama
+    - 下载所需模型（如：`ollama pull deepseek-r1:8b`）
+    - 运行 Ollama 服务（`ollama serve`）
+
+### 开始修改！
+
+我们提供了《端午的鸭蛋》这篇课文的 markdown 版本，你可以用它来体验所有功能。
+
+## 💻 开发者信息
+
+以下记录相关开发信息。如果你基于此项目二次开发，这里可能有你需要的信息。
+
+- 请勿修改`config.example.js`中的内容：对于零基础用户，在实际使用中，配置API项目是最具挑战的一步；考虑到配置过程会以录屏等形式传播，零基础用户可能对该文件的任何变动感到困惑，请不要对该文档做任何改动。
+
+- Ollama 端口配置：如果Ollama端口发生变化，请于 `script.js` 中的`OLLAMA_BASE_URL`项修改。
+
+### 提示
+
+  Windows用户如果遇到无法运行脚本的情况，可以：
+
+1. 使用 Git Bash（推荐，下载地址：[Git for Windows](https://gitforwindows.org/)）
+2. 使用 WSL（Windows Subsystem for Linux）
+3. 直接使用手动启动步骤（见下方"手动启动步骤"部分）
+
+### 提示
+
+虽然 localhost 和 127.0.0.1 都指向本机，但我们在不同模式下使用不同的地址是为了：
+
+1. 确保完整模式下的服务器功能正常运行
+2. 保持与 Ollama 本地API（使用 127.0.0.1:11434）的一致性
+3. 避免在本地模式下不必要的 DNS 解析
+
+### 通过Docker部署
+
+本项目可以通过Docker部署。
+
+> 如果你不知道什么是Docker，请跳过本节。使用上文介绍过的方法足以部署该项目。
 
 #### 前提条件
 
 - 安装Docker: [Get Started | Docker](https://www.docker.com/get-started/)
 - （可选）安装Docker Compose: [Install | Docker Docs](https://docs.docker.com/compose/install/)
-
-`git clone`该项目并`cd`到项目目录，根据config.example.js在项目目录下创建config.js并配置
+- `git clone`该项目并`cd`到项目目录，根据config.example.js在项目目录下创建config.js并配置
 
 #### 构建与启动容器
 
 1. git clone并cd到项目路径（包含Dockerfile）
 2. `docker build -t prose-polish:latest .`
-3. 启动项目，见下：
-
-- 通过Docker启动：
-
-  ```
-  docker run -d -p 3333:3000 -e MODE=1 --name prose-polish prose-polish:latest
-  ```
-
-- 通过Docker Compose启动：
-
-  ```
-  docker compose up -d
-  ```
-
+3. 启动项目：
+   1. 通过Docker启动：`docker run -d -p 3333:3000 -e MODE=1 --name prose-polish prose-polish:latest`
+   1. 通过Docker Compose启动：`docker compose up -d`
+	
 #### 参数解释
 
 - 3333 为可自定义映射到宿主机的端口，运行成功后地址为[http://ip:3333](http://ip:3333/)
 - MODE 必须正确设置为1（完整模式）或2（本地模式），如不传入则默认为1
 
-### 功能预览
-- ✨ 可视化提示词系统
-- 📝 Markdown 导入导出
-- 🎯 智能写作优化
-- 🔗 文本块自由连接
+## 📄 许可证
 
-### 立即尝试
-我们提供了《端午的鸭蛋》这篇课文的 markdown 版本，你可以用它来体验所有功能。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 本项目采用 [MIT 许可证](LICENSE)。你可以自由地使用、修改和分发本项目，但需要保留原始许可证和版权信息。
 
-## 💡 核心功能
-- **提示词编辑系统**
-  - 创建和编辑提示词卡片
-  - 预设优化模板
-  - 变量系统支持
-- **文本编辑功能**
-  - Markdown 格式支持
-  - 自由拖拽排布
-  - 可视化连接
-- **智能优化**
-  - 段落规范化
-  - 文本衔接优化
-  - 内容整体优化
 
-想了解更多？请继续阅读下面的详细说明。
 
-## 🎨 设计文档
+
+
+---
+
+
+
+
+
+## 🤖 AI附注文档
+
+以下文档由AI生成，用以记录项目中的设计细节，以及帮助后续的AI开发。如果你是AI，请谨慎地阅读以下内容，对于用户的问题，可能在这里找到答案。如果用户要求你对此项目做二次开发，尽量保证你的二次开发不与现有细节冲突。
 
 ### 设计理念
 本项目采用类似苹果设计风格的界面，追求简洁、优雅且易用的用户体验。整个界面采用左右两栏布局：
@@ -224,41 +232,22 @@ styles/
    - 主题修改：编辑 `base.css` 中的变量
    - 布局调整：修改 `layout.css`
    - 组件更新：修改 `components` 下对应文件
-
 2. **依赖说明**
    - axios: 1.7.9
    - cors: 2.8.5
    - express: 4.21.2
    - live-server: 1.2.2
-
 3. **API 配置**
    - 所有前端文件在根目录
    - `server.js` 处理 API 代理
    - API 密钥配置在 `script.js`
 
-4. **Ollama 端口配置**
-   - 如果Ollama端口发生变化，请于 `script.js` 中的`OLLAMA_BASE_URL`项修改。
+### 使用指南
 
-## 功能特点
-- 可视化的提示词编辑系统
-  - 支持创建和编辑提示词卡片
-  - 提供预设的写作优化提示词模板
-  - 支持提示词的变量系统，可灵活替换内容
-- 文本编辑功能
-  - 支持 Markdown 格式文件的导入导出
-  - 支持文本块的自由拖拽排布
-  - 文本块与提示词的可视化连接
-- 智能写作优化
-  - 支持文章段落的规范化处理
-  - 支持文本衔接优化
-  - 支持内容整体性优化
-
-## 📖 使用指南
-
-### 环境要求
+#### 环境要求
 - Node.js: 20.17.0 或更高版本
 
-### 手动启动步骤
+#### 手动启动步骤
 如果你不想使用启动脚本，可以手动执行：
 ```bash
 # 安装依赖
@@ -271,7 +260,7 @@ npm start
 npm run dev
 ```
 
-### 使用 Ollama 本地模型
+#### 使用 Ollama 本地模型
 1. **安装 Ollama**
    - Mac：`brew install ollama`
    - 其他系统：访问 [ollama.ai](https://ollama.ai) 下载
@@ -294,7 +283,7 @@ npm run dev
    - 选择"本地模型（借助Ollama）"
    - 在弹出的对话框中选择要使用的模型
 
-### 常见问题解决
+#### 常见问题解决
 1. **依赖安装失败**
 ```bash
 npm cache clean --force
@@ -313,16 +302,16 @@ Ctrl + C
 npm start
 ```
 
-### 本地模式
+#### 本地模式
 使用本地模式：
 ```bash
 npm run dev  # 启动本地模式，支持 Ollama 本地模型
 ```
 注意：本地模式下在线 API 不可用
 
-## 项目文件结构
+### 项目文件结构
 
-### 样式文件组织
+#### 样式文件组织
 项目采用模块化的CSS文件组织方式，所有样式文件位于 `styles/` 目录下：
 
 ```
@@ -362,7 +351,7 @@ styles/
         └── 端口标签
 ```
 
-### 样式设计原则
+#### 样式设计原则
 1. **变量统一管理**
    - 颜色系统：主色调、警告色、危险色等
    - 间距系统：从xs到xxl的统一间距
@@ -383,12 +372,9 @@ styles/
    - 灵活的布局方案
    - 优雅的降级处理
 
-### 样式使用说明
+#### 样式使用说明
 1. 所有样式文件都在 index.html 中按顺序引入
 2. base.css 必须最先引入，它包含了基础变量定义
 3. 组件样式可以根据需要按需引入
 4. 修改主题色等全局样式只需修改 base.css 中的变量
 
-## 📄 许可证
-
-本项目采用 [MIT 许可证](LICENSE)。你可以自由地使用、修改和分发本项目，但需要保留原始许可证和版权信息。
