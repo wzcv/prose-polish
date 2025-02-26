@@ -202,6 +202,9 @@ styles/
    - `server.js` 处理 API 代理
    - API 密钥配置在 `script.js`
 
+4. **Ollama 端口配置**
+   - 如果Ollama端口发生变化，请于 `script.js` 中的`OLLAMA_BASE_URL`项修改。
+
 ## 功能特点
 - 可视化的提示词编辑系统
   - 支持创建和编辑提示词卡片

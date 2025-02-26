@@ -4,6 +4,10 @@ import { ConnectionManager } from './js/connectionManager.js';
 import { CONFIG } from './config.js';
 import { initializeCardManagement } from './js/promptCard.js';
 
+
+    // Ollama配置
+const OLLAMA_BASE_URL = 'http://localhost:11434'; //可在此处修改端口
+
 // 模型配置
 const MODEL_CONFIG = {
     DEEPSEEK: {
@@ -381,13 +385,13 @@ async function showOllamaDialog() {
     // 获取可用模型列表
     try {
         // 首先检查 Ollama 服务是否在运行
-        const healthCheck = await fetch(CONFIG.OLLAMA_BASE_URL);
+        const healthCheck = await fetch(OLLAMA_BASE_URL);
         if (!healthCheck.ok) {
             throw new Error('无法连接到 Ollama 服务');
         }
         
         // 获取已安装的模型列表
-        const response = await fetch(`${CONFIG.OLLAMA_BASE_URL}/api/tags`);
+        const response = await fetch(`${OLLAMA_BASE_URL}/api/tags`);
         if (!response.ok) {
             throw new Error('无法获取模型列表');
         }
@@ -530,7 +534,7 @@ async function callAIAPI(message, model) {
         }
 
         try {
-            const response = await fetch(`${CONFIG.OLLAMA_BASE_URL}/api/generate`, {
+            const response = await fetch(`${OLLAMA_BASE_URL}/api/generate`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
