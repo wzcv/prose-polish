@@ -62,7 +62,9 @@ chmod +x start.sh
 ```bash
 # 使用Git Bash
 sh start.sh
+```
 
+```bash
 # 或使用 PowerShell/CMD
 bash start.sh
 ```
