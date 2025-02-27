@@ -46,9 +46,12 @@
 }
 
 .prompt-card .card-prompt::-webkit-scrollbar {
-    width: 4px;
+    width: 0;
 }
 
+.prompt-card .card-prompt:hover::-webkit-scrollbar {
+    width: 4px;
+}
 .prompt-card .card-prompt::after {
     content: '';
     position: sticky;
