@@ -36,15 +36,22 @@
     color: var(--color-text-secondary);
     margin-top: var(--spacing-sm);
     white-space: pre-wrap;
-    overflow: hidden;
+    overflow-y: auto;
+    max-height: 100px;
     text-overflow: ellipsis;
     position: relative;
     flex: 1;
+    padding-right: 12px;
+    margin-right: -8px;
+}
+
+.prompt-card .card-prompt::-webkit-scrollbar {
+    width: 4px;
 }
 
 .prompt-card .card-prompt::after {
     content: '';
-    position: absolute;
+    position: sticky;
     bottom: 0;
     right: 0;
     width: 100%;
