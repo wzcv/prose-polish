@@ -80,10 +80,11 @@ paragraphContainer.addEventListener('drop', (e) => {
     e.preventDefault();
     const content = e.dataTransfer.getData('text/plain');
     if (content) {
-        // 计算放置位置
+        // 计算放置位置，考虑滚动偏移
         const rect = paragraphContainer.getBoundingClientRect();
+        const scrollTop = paragraphContainer.scrollTop; // 获取容器的垂直滚动位置
         const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const y = e.clientY - rect.top + scrollTop; // 加上滚动偏移
         
         // 创建新卡片
         const card = markdownHandler.createCard(content);
