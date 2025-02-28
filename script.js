@@ -748,7 +748,11 @@ async function callAIAPI(message, model) {
                             role: 'user',
                             content: message
                         }
-                    ]
+                    ],
+                    stream: true,
+                    stream_options:{
+                        include_usage: true
+                    }
                 })
             });
 
@@ -758,9 +762,37 @@ async function callAIAPI(message, model) {
                 throw new Error(`API调用失败: ${errorData.error?.message || '未知错误'}`);
             }
 
-            const data = await response.json();
-            console.log('DeepSeek响应数据:', data);
-            return data.choices[0].message.content;
+            // 处理流式响应
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let result = '';
+            promptOutput.textContent = '';
+            const processStream = async () => {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    try {
+                        const chunk = decoder.decode(value, { stream: true });
+                        const lines = chunk.split('\n').filter(line => line.trim() !== '');
+                        for (const line of lines) {
+                            if (line.startsWith("data: ")) {
+                                const data = line.slice(6).trim();
+                                console.log(data);
+                                if (data === "[DONE]") return result;
+                                try {
+                                    const parsedData = JSON.parse(data);
+                                    // const content = parsedData.choices?.[0]?.delta?.content || ''; // 换成这个可以去掉思维链
+                                    const content = parsedData.choices?.[0]?.delta?.content || parsedData.choices?.[0]?.delta?.reasoning_content || '';
+                                    result += content;
+                                    promptOutput.textContent += content;
+                                    promptOutput.scrollTop = promptOutput.scrollHeight;
+                                } catch { }
+                            }
+                        }
+                    } catch { }
+                }
+            };
+            return processStream();
         } catch (error) {
             throw error;
         }
