@@ -223,6 +223,30 @@ export class MarkdownHandler {
         // 鼠标松开时
         const mouseUp = () => {
             if (draggedCard) {
+                // 获取容器的位置信息
+                const containerRect = this.container.getBoundingClientRect();
+
+                // 获取卡片的当前位置信息
+                const cardRect = draggedCard.getBoundingClientRect();
+
+                // 确保卡片在容器范围内
+                let newX = parseInt(draggedCard.style.left) || 0;
+                let newY = parseInt(draggedCard.style.top) || 0;
+
+                // 检查左边范围
+                if (newX < 0) {
+                    newX = 0;
+                }
+
+                // 检查上边范围
+                if (newY < 0) {
+                    newY = 0;
+                }
+
+                // 更新卡片位置
+                draggedCard.style.left = `${newX}px`;
+                draggedCard.style.top = `${newY}px`;
+
                 // 恢复过渡效果
                 draggedCard.style.transition = '';
                 draggedCard = null;
