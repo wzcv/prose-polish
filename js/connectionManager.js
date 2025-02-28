@@ -187,7 +187,7 @@ export class ConnectionManager {
                 if (connection.endPort.classList.contains('text-card-port')) {
                     const svg = connection.endPort.querySelector('svg');
                     if (svg) {
-                        svg.style.transform = 'none';
+                        // svg.style.transform = 'none';
                     }
                     connection.endPort.classList.remove('prompt-connected', 'chain-connected');
                     
