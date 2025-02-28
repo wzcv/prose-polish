@@ -661,28 +661,24 @@ async function callAIAPI(message, model) {
         }
     } else if (modelInfo.model === 'tongyi') {
         try {
-            const response = await fetch(API_CONFIG.API_URL, {
+            const response = await fetch("https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", {
                 method: 'POST',
                 headers: {
                     'Authorization': API_CONFIG.TONGYI_API_KEY,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    model: 'qwen-turbo',
-                    input: {
-                        messages: [
-                            {
-                                role: 'system',
-                                content: API_CONFIG.SYSTEM_MESSAGE.content
-                            },
-                            {
-                                role: 'user',
-                                content: message
-                            }
-                        ]
-                    },
-                    parameters: {
-                        result_format: 'message'
+                    model: CONFIG.TONGYI_MODEL,
+                    messages: [
+                        API_CONFIG.SYSTEM_MESSAGE,
+                        {
+                            role: 'user',
+                            content: message
+                        }
+                    ],
+                    stream: true,
+                    stream_options:{
+                        include_usage: true
                     }
                 })
             });
@@ -693,9 +689,35 @@ async function callAIAPI(message, model) {
                 throw new Error(`API调用失败: ${errorData.message || '未知错误'}`);
             }
 
-            const data = await response.json();
-            console.log('通义千问响应数据:', data);
-            return data.output?.choices?.[0]?.message.content;
+            // 处理流式响应
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let result = '';
+            promptOutput.textContent = '';
+            const processStream = async () => {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    try {
+                        const chunk = decoder.decode(value, { stream: true });
+                        const lines = chunk.split('\n').filter(line => line.trim() !== '');
+                        for (const line of lines) {
+                            if (line.startsWith("data: ")) {
+                                const data = line.slice(6).trim();
+                                if (data === "[DONE]") return result;
+                                try {
+                                    const parsedData = JSON.parse(data);
+                                    const content = parsedData.choices?.[0]?.delta?.content || '';
+                                    result += content;
+                                    promptOutput.textContent += content;
+                                    promptOutput.scrollTop = promptOutput.scrollHeight;
+                                } catch { }
+                            }
+                        }
+                    } catch { }
+                }
+            };
+            return processStream();
         } catch (error) {
             throw error;
         }

@@ -7,6 +7,7 @@ export const CONFIG = {
     // 通义千问 API 密钥
     // 获取方式：访问 https://dashscope.aliyun.com/
     TONGYI_API_KEY: 'your-tongyi-api-key-here',
+    TONGYI_MODEL: 'qwen-turbo', // 可选：qwen-max（贵但好）、qwen-plus（高性价比）、qwen-turbo（便宜但笨），具体请参考：https://help.aliyun.com/zh/model-studio/getting-started/models
 
     // DeepSeek API 密钥
     // 获取方式：访问 https://platform.deepseek.com
