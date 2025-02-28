@@ -590,7 +590,7 @@ async function callAIAPI(message, model) {
     // 在本地模式下，除了 Ollama 外的其他模型都使用模拟数据
     if (isDevelopment) {
         console.log('本地模式');
-        return `[本地模式] 当前仅支持本地的 Ollama 模型。如需调用在线API，请切换到在线API模式。`;
+        return `[本地模式] 当前仅支持本地的 Ollama 模型。如需调用在线API，请切换到在线API模式，即访问 http://localhost:3000 而不是 http://127.0.0.1:3000`;
     }
 
     // 其他模型的处理逻辑保持不变
