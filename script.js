@@ -5,7 +5,7 @@ import { CONFIG } from './config.js';
 import { initializeCardManagement } from './js/promptCard.js';
 
 
-    // Ollama配置
+// Ollama配置
 const OLLAMA_BASE_URL = 'http://localhost:11434'; //可在此处修改端口
 
 // 模型配置
@@ -339,7 +339,7 @@ CUSTOM_MODEL: {
     BASE_URL: '${baseUrl}',
     API_KEY: '${apiKey}',
     MODEL: '${model}'
-}`;
+},`;
         
         console.log('新的自定义模型配置：');
         console.log(configText);
@@ -551,10 +551,6 @@ async function callAIAPI(message, model) {
                     prompt: message,
                     system: API_CONFIG.SYSTEM_MESSAGE.content,
                     stream: true, // 启用流式传输
-                    options: {
-                        temperature: 0.7,
-                        top_p: 0.9
-                    }
                 })
             });
 
@@ -584,7 +580,6 @@ async function callAIAPI(message, model) {
                 }
                 return result;
             };
-
             return processStream();
         } catch (error) {
             if (error.message.includes('Failed to fetch')) {
@@ -621,7 +616,8 @@ async function callAIAPI(message, model) {
                             role: 'user',
                             content: message
                         }
-                    ]
+                    ],
+                    stream: true,
                 })
             });
 
@@ -631,9 +627,35 @@ async function callAIAPI(message, model) {
                 throw new Error(`API调用失败: ${errorData.error?.message || '未知错误'}`);
             }
 
-            const data = await response.json();
-            console.log('自定义模型响应数据:', data);
-            return data.choices[0].message.content;
+            // 处理流式响应
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let result = '';
+            promptOutput.textContent = '';
+            const processStream = async () => {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    try {
+                        const chunk = decoder.decode(value, { stream: true });
+                        const lines = chunk.split('\n').filter(line => line.trim() !== '');
+                        for (const line of lines) {
+                            if (line.startsWith("data: ")) {
+                                const data = line.slice(6).trim();
+                                if (data === "[DONE]") return result;
+                                try {
+                                    const parsedData = JSON.parse(data);
+                                    const content = parsedData.choices[0]?.delta?.content || '';
+                                    result += content;
+                                    promptOutput.textContent += content;
+                                    promptOutput.scrollTop = promptOutput.scrollHeight;
+                                } catch { }
+                            }
+                        }
+                    } catch { }
+                }
+            };
+            return processStream();
         } catch (error) {
             throw error;
         }
