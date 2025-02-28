@@ -18,6 +18,19 @@ export class ConnectionManager {
             const port = e.target.closest('.connection-port, .text-card-port, .text-card-chain-port');
             if (!port) return;
 
+            // 检查是否是从插座开始拖拽
+            if (port.classList.contains('text-card-port')) {
+                // 如果是插座，找到下方的卡片并选择它
+                const card = port.closest('.paragraph-card');
+                if (card) {
+                    // 获取卡片的坐标
+                    const cardRect = card.getBoundingClientRect();
+                    // 触发卡片的拖动逻辑，并传入相对坐标
+                    card.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: e.clientX, clientY: e.clientY}));
+                }
+                return;
+            }
+
             this.startConnection(port, e);
         });
 
@@ -84,15 +97,18 @@ export class ConnectionManager {
             const chainConnectionId = this.portConnections.get(`${portId}_chain`);
             const promptConnectionId = this.portConnections.get(`${portId}_prompt`);
             
+            // 检查是否已经有连接
+            if (chainConnectionId !== undefined || promptConnectionId !== undefined) {
+                return true; // 如果已经有连接，返回
+            }
+
             // 如果当前尝试建立的是链式连接（来自紫色插头）
             if (this.startPort?.classList.contains('text-card-chain-port')) {
-                // 只检查是否已经有来自其他文本卡片的链式连接
-                return chainConnectionId !== undefined;
+                return false; // 不允许多个插头
             }
             // 如果当前尝试建立的是提示词连接
             if (this.startPort?.classList.contains('connection-port')) {
-                // 只检查是否已经有来自提示词卡片的连接
-                return promptConnectionId !== undefined;
+                return false; // 不允许多个插头
             }
             return false;
         }

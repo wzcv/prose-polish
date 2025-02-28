@@ -129,6 +129,12 @@ function addDefaultTextCard() {
     const card = markdownHandler.createCard(defaultText);
     card.style.left = '10px';
     card.style.top = '10px';
+
+    // 添加第二个示例卡片
+    const anotherCardText = `这是另一个示例卡片，你可以拖动、缩放、连接它们。`;
+    const anotherCard = markdownHandler.createCard(anotherCardText);
+    anotherCard.style.left = '10px';
+    anotherCard.style.top = '170px'; // 在第一个卡片下方
 }
 
 // 在页面加载完成后添加默认卡片
