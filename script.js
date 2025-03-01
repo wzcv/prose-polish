@@ -668,7 +668,7 @@ async function callAIAPI(message, model) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    model: CONFIG.TONGYI_MODEL,
+                    model: 'qwen-plus',
                     messages: [
                         API_CONFIG.SYSTEM_MESSAGE,
                         {
