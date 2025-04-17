@@ -56,7 +56,7 @@ window.addEventListener('scroll', () => connectionManager.updateConnections());
 // 拖拽开始时记录内容
 promptOutput.addEventListener('dragstart', (e) => {
     const content = promptOutput.textContent.trim();
-    if (content && content !== '等待提交提示词...' && content !== 'AI思考中...') {
+    if (content && content !== '等待第一次提交...' && content !== 'AI思考中...') {
         e.dataTransfer.setData('text/plain', content);
         // 添加拖拽效果
         promptOutput.style.opacity = '0.5';
