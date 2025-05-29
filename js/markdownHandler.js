@@ -301,4 +301,34 @@ export class MarkdownHandler {
             addButton.addEventListener('click', (e) => this.addNewCard(e));
         }
     }
+
+    // 导出Markdown
+    exportMarkdown() {
+        const cardsInOrder = Array.from(this.container.querySelectorAll('.paragraph-card'))
+            .sort((a, b) => {
+                const topA = parseInt(a.style.top) || 0;
+                const topB = parseInt(b.style.top) || 0;
+                return topA - topB;
+            });
+
+        if (cardsInOrder.length === 0) {
+            showAlert('没有内容可以导出。');
+            return;
+        }
+
+        const markdownContent = cardsInOrder
+            .map(card => card.querySelector('.card-content').textContent.trim())
+            .join('\n\n'); // 段落之间用双换行符分隔
+
+        const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'prose-polish-export.md';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showAlert('Markdown文件已导出！');
+    }
 } 
