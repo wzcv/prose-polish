@@ -115,7 +115,9 @@ export class SettingsManager {
    * 获取当前设置
    */
   getSettings() {
-    return this.settings;
+    const freshSettings = this.loadSettings();
+    this.settings = freshSettings; 
+    return freshSettings;
   }
 
   /**

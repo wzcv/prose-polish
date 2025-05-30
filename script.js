@@ -21,6 +21,8 @@ const importMarkdownButton = document.getElementById('import-button');
 const exportMarkdownButton = document.getElementById('export-button');
 const addParagraphButton = document.getElementById('add-paragraph');
 const clearParagraphsButton = document.getElementById('clear-paragraphs');
+const modelSelector = document.getElementById('model-selector');
+const modelDropdown = document.querySelector('.model-dropdown');
 
 // 初始化管理器
 const settingsManager = new SettingsManager();
@@ -130,6 +132,19 @@ document.addEventListener('DOMContentLoaded', () => {
     addDefaultTextCard();  // 添加默认文本卡片
     initializeModelDropdown(); // 初始化模型下拉菜单
     initializeCardManagement(); // 确保这个在DOM加载后调用，如果它依赖DOM元素
+
+    // 控制模型下拉菜单的显示/隐藏
+    modelSelector.addEventListener('click', (e) => {
+        e.stopPropagation();
+        modelSelector.classList.toggle('active');
+        modelDropdown.classList.toggle('show');
+    });
+
+    // 点击页面其他地方关闭模型下拉菜单
+    document.addEventListener('click', () => {
+        modelDropdown.classList.remove('show');
+        modelSelector.classList.remove('active');
+    });
 });
 
 // 监听设置更改事件，重新初始化模型下拉菜单
@@ -186,8 +201,12 @@ submitButton.addEventListener('click', async () => {
 
 // 初始化模型下拉菜单
 function initializeModelDropdown() {
-    const modelSelector = document.getElementById('model-selector');
-    const modelDropdown = document.querySelector('.model-dropdown');
+    // const modelSelector = document.getElementById('model-selector'); // Removed
+    // const modelDropdown = document.querySelector('.model-dropdown'); // Removed
+    
+    // 确保下拉菜单初始关闭
+    modelDropdown.classList.remove('show');
+    modelSelector.classList.remove('active');
     
     // 获取设置
     const settings = settingsManager.getSettings();
@@ -244,15 +263,7 @@ function initializeModelDropdown() {
         currentModel = enabledModels[0].id;
     }
     
-    // 更新选中状态
     updateSelectedModel(currentModel);
-
-    // 切换下拉菜单
-    modelSelector.addEventListener('click', (e) => {
-        e.stopPropagation();
-        modelSelector.classList.toggle('active');
-        modelDropdown.classList.toggle('show');
-    });
 
     // 选择模型
     modelDropdown.querySelectorAll('.model-option').forEach(option => {
@@ -278,12 +289,6 @@ function initializeModelDropdown() {
             modelDropdown.classList.remove('show');
             modelSelector.classList.remove('active');
         });
-    });
-
-    // 点击其他地方关闭下拉菜单
-    document.addEventListener('click', () => {
-        modelDropdown.classList.remove('show');
-        modelSelector.classList.remove('active');
     });
 }
 
