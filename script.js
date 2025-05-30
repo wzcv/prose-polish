@@ -285,11 +285,6 @@ function initializeModelDropdown() {
         modelDropdown.classList.remove('show');
         modelSelector.classList.remove('active');
     });
-
-    // 监听设置变更事件
-    window.addEventListener('settingsChanged', () => {
-        initializeModelDropdown();
-    });
 }
 
 // 更新选中的模型
