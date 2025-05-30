@@ -132,6 +132,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeCardManagement(); // 确保这个在DOM加载后调用，如果它依赖DOM元素
 });
 
+// 监听设置更改事件，重新初始化模型下拉菜单
+window.addEventListener('settingsChanged', () => {
+    initializeModelDropdown();
+});
+
 // 监听卡片选择
 cardManager.onCardSelected = (card) => {
     submitButton.disabled = !card;
